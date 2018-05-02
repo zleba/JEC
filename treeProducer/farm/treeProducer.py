@@ -1,3 +1,6 @@
+currDir = '/afs/desy.de/user/z/zlebcr/cms/CMSSW_9_3_0/src/JEC/treeProducer/farm'
+print 'farm directory is', currDir
+
 import FWCore.ParameterSet.Config as cms 
 import FWCore.ParameterSet.VarParsing as VarParsing
 
@@ -9,8 +12,8 @@ SimpleMemoryCheck = cms.Service("SimpleMemoryCheck",
 options = VarParsing.VarParsing ('analysis')
 
 options.register ('listFile',
-        "/afs/desy.de/user/z/zlebcr/cms/CMSSW_9_3_0/src/JEC/treeProducer/farm/fileLists/Aug17/G.txt", # default value
-        #"/afs/desy.de/user/z/zlebcr/cms/CMSSW_9_3_0/src/KKousour/TopAnalysis/test/farm/fileLists/QCD_TuneCUETP8M1_13TeV_pythia8/1000to1400.txt", # default value
+        currDir+"/fileLists/Aug17/G.txt", # default value
+        #currDir+"/fileLists/QCD_TuneCUETP8M1_13TeV_pythia8/1000to1400.txt", # default value
         VarParsing.VarParsing.multiplicity.singleton, # singleton or list
         VarParsing.VarParsing.varType.string,         # string, int, or float
         "Name of file with list of files")
@@ -73,7 +76,7 @@ process.source = cms.Source("PoolSource",
 
 if 'mc' not in curFiles[0]:
     import FWCore.PythonUtilities.LumiList as LumiList
-    process.source.lumisToProcess = LumiList.LumiList(filename = '/afs/desy.de/user/z/zlebcr/cms/CMSSW_9_3_0/src/JEC/treeProducer/farm/Cert_271036-284044_13TeV_PromptReco_Collisions16_JSON.txt').getVLuminosityBlockRange()
+    process.source.lumisToProcess = LumiList.LumiList(filename = currDir+'/Cert_271036-284044_13TeV_PromptReco_Collisions16_JSON.txt').getVLuminosityBlockRange()
 
 
 task = cms.Task()

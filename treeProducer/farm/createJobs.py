@@ -1,12 +1,14 @@
 #!/usr/local/bin/python2.7
 
 import os
-curDir = os.getcwd()
+curDir = os.path.dirname(os.path.realpath('__file__'))
+
+
 listADDRESS = curDir + '/fileLists/Aug17'
 #listADDRESS = curDir + '/fileLists/QCD_TuneCUETP8M1_13TeV_pythia8'
 
 #outDir = '/nfs/dust/cms/user/zlebcr/JEC/ntuplesJCunc'
-outDir = '/nfs/dust/cms/user/zlebcr/JEC/ntuplesNewFormat'
+outDir = '/nfs/dust/cms/user/zlebcr/JEC/ntuplesTest'
 pemFile = '/afs/desy.de/user/z/zlebcr/proxy.pem'
 
 step=6
@@ -48,7 +50,7 @@ for run in Tags:
         "pwd",
         "export X509_USER_PROXY="+pemFile,
 #        "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/afs/desy.de/user/z/zlebcr/cms/CMSSW_9_3_0/src/KKousour/TopAnalysis/plugins/",
-         "cmsRun "+curDir+"/flatData-new.py  listFile="+listADDRESS+"/"+File+
+         "cmsRun "+curDir+"/treeProducer.py  listFile="+listADDRESS+"/"+File+
          " startFile="+str(i*step+1)+"  nFiles="+str(step)+
          " outputFile="+ outDir+"/"+name+".root",
 #        "time parallel cmsRun "+curDir+"/flatData-new.py  listFile="+listADDRESS+"/"+File+
