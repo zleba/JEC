@@ -1,0 +1,21 @@
+running=`qstat | awk '{print $3}' | grep -o "jets[^.]*"`
+
+address=/nfs/dust/cms/user/zlebcr/JEC/ntuplesAugNew
+#echo $running
+
+all=`ls sub/*.sub`
+
+for j in $all
+do
+    pure=`echo $j | grep -o "jets[^.]*"`
+    if [[ $running == *"$pure"* ]]; then
+        continue
+        #echo "I am here"
+    fi
+    #echo $pure 
+    nlines=`root -l -b -q $address/$pure.root |& wc -l`
+
+    if [ $nlines -gt 2 ]; then
+        echo $pure
+    fi
+done
