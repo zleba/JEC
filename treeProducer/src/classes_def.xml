@@ -1,0 +1,7 @@
+<lcgdict>
+    <selection>
+        <class name="QCDjet"/>
+        <class name="std::vector<QCDjet>"/>
+        <class name="std::vector<ROOT::Math::PtEtaPhiM4D<float> >"/>
+    </selection>
+</lcgdict>
