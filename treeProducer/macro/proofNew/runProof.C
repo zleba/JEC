@@ -14,7 +14,7 @@ void runProof(int nMax=1, int nNow=0, char per = 'A') {
     
     //gSystem->Load("../../plugins/QCDjet.h");
 
-    //gROOT->ProcessLine(".L  /afs/desy.de/user/z/zlebcr/cms/CMSSW_9_3_0/src/KKousour/TopAnalysis/plugins/QCDjet.h");
+    //gROOT->ProcessLine(".L  /afs/desy.de/user/z/zlebcr/cms/CMSSW_9_3_0/src/JEC/treeProducer/plugins/QCDjet.h");
 
 
     TChain * chain = new TChain("ak4/events");

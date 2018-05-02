@@ -18,7 +18,7 @@
 
 // Headers needed by this particular selector
 //#include "KKousour/TopAnalysis/plugins/QCDjet.h"
-#include "KKousour/TopAnalysis/interface/QCDjet.h"
+#include "JEC/treeProducer/interface/QCDjet.h"
 
 #include <vector>
 #include <array>
