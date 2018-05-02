@@ -8,7 +8,7 @@ git clone git@github.com:zleba/JEC.git
 cd JEC/treeProducer
 scram b
 ```
-Note that file `treeProducer/plugins/JEC.h` contains hard-coded location to the directory with JEC tables, you may replace it with the current directory. Only V7 corrections are included in this repository.
+Note that file `treeProducer/plugins/JEC.h` contains hard-coded location to the directory with JEC tables, you may replace it with the current directory. Only V7 corrections are included in this git repository.
 
 ## Production of the nTuples
 The `treeProducer.cc` is in `plugins`. To run this code and produce ntuples, we use scripts in `farm` folder.
