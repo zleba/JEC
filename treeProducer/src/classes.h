@@ -1,3 +1,3 @@
-#include "KKousour/TopAnalysis/interface/QCDjet.h"
+#include "JEC/treeProducer/interface/QCDjet.h"
 
 QCDjet qcdjet;
