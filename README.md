@@ -35,3 +35,7 @@ The resulting histogram files in `histos` folder needs to be merged into single 
 Currently there is simple plotting macro in the `macro/proofNew` directory called `plotter.C`, to simplify the code, some functions from `plottingHelper` library are employed, more information on:
 ```https://github.com/zleba/PlottingHelper```
 for plotting itself do `root -l -b -q plotter.C`, check the input and output file which are hard-coded in the beginning of `void plotter()` function.
+
+
+## TODO
+Move to `ht_condor` batch system.
