@@ -15,7 +15,7 @@ The `treeProducer.cc` is in `plugins`. To run this code and produce ntuples, we 
 The python config file for `cmsRun` is called `farm/treeProducer.py`.
 1) Fill the current directory into variable `currDir` of `treeProducer.py`
 2) Try test run by `cmsRun treeProducer.py`
-3) Run `./createJobs.py` to produce submit files for 2016 data, before running please fill the output directory, where the nTuples will be stored, and path to the `proxy.pem` file.
+3) Run `./createJobs.py` to produce submit files for 2016 data, before running please fill the output directory, where the nTuples will be stored, and path to the valid `proxy.pem` file.
 4) Submit all files in `sub` directory
 5) After all runs are finished, merge each period into single `root`-file using `hadd`
 
