@@ -2,12 +2,12 @@
 #transfer of executable can be handy as you can keep working on the executable localy while the job is running
 #without interference with the binary the job is running
 executable          = mypayload.sh
-transfer_executable = True
+transfer_executable = False
 universe            = vanilla
-input               = /nfs/dust/my/path/to/data/mypayload.data
-output              = /nfs/dust/my/path/to/a/dir/mypayload._$(Cluster)_$(Process)out
-error               = /nfs/dust/my/path/to/some/other/dir/mypayload_$(Cluster)_$(Process).error
-log                 = /nfs/dust/my/path/to/some/more/dir/mypayload_$(Cluster)_$(Process).log
+#input               = /nfs/dust/my/path/to/data/mypayload.data
+#output              = /nfs/dust/my/path/to/a/dir/mypayload._$(Cluster)_$(Process)out
+error               = /afs/desy.de/user/z/zlebcr/cms/CMSSW_9_3_0/src/JEC/treeProducer/farm/logs/mypayload_$(Cluster)_$(Process).error
+log                 = /afs/desy.de/user/z/zlebcr/cms/CMSSW_9_3_0/src/JEC/treeProducer/farm/logs/mypayload_$(Cluster)_$(Process).log
 
 
 #_$(Cluster)_$(Process) gets substituted by cluster and process ID, putting it in the output files leads to individual files
