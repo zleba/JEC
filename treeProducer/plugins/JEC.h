@@ -13,6 +13,7 @@
 using namespace edm;
 using namespace std;
 
+const string JECpath = "/afs/desy.de/user/z/zlebcr/cms/CMSSW_9_3_0/src/JEC/treeProducer/data/JECtables";
 
 
 class JECs  {
@@ -213,11 +214,10 @@ class JECs  {
             }
 
 
-            const string path = "/afs/desy.de/user/z/zlebcr/cms/CMSSW_9_3_0/src/JEC/treeProducer/data/JECtables";
 
             string sep = GlobalTag.find("Spring") != std::string::npos ? "" : "_";
             auto WholePath = [&](string type) {
-                return path+"/"+GlobalTag+"_V"+ to_string(version) +"/" +
+                return JECpath+"/"+GlobalTag+"_V"+ to_string(version) +"/" +
                 GlobalTag +Period + sep+"V"+to_string(version)+"_"+ file_data_mc+"/"+
                 GlobalTag +Period + sep+"V"+to_string(version)+"_"+ file_data_mc+"_"+type+"_"+JETTYPE+".txt";
             };
