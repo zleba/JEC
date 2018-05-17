@@ -31,6 +31,18 @@
 #include "TRandom.h"
 
 
+//const vector<double> etaBins2  = { 0, 0.261, 0.522, 0.783, 1.044, 1.305, 1.479, 1.653, 1.93, 2.172, 2.322, 2.5, 2.65, 2.853, 2.964, 3.139, 3.489, 3.839, 5.191};
+
+const vector<double> etaBins2 =  {0., 0.087, 0.174, 0.261, 0.348, 0.435, 0.522, 0.609, 0.696, 0.783, 0.879, 0.957, 1.044, 1.131, 1.218, 1.305, 1.392, 1.479, 1.566, 1.653, 1.74, 1.83, 1.93, 2.043, 2.172, 2.322, 2.5, 2.65, 2.853, 2.964, 3.139, 3.314, 3.489, 3.664, 3.839, 4.013, 4.191, 4.363, 4.538, 4.538, 4.716, 4.889, 5.191};
+
+
+const vector<double> Ptbinning = {0, 1, 5, 6, 8, 10, 12, 15, 18, 21, 24, 28, 32, 37, 43, 49, 56, 64, 74, 84, 97, 114, 133, 153, 174, 196, 220, 245, 272, 300, 330, 362, 395, 430, 468,507, 548, 592, 638, 686, 737, 790, 846, 905, 967,1032, 1101, 1172, 1248, 1327, 1410, 1497, 1588, 1684, 1784, 1890,  2000,2116, 2238, 2366, 2500, 2640, 2787, 2941, 3103, 3273, 3450, 3637, 3832,4037, 4252, 4477, 4713, 4961, 5220, 5492, 5777, 6076, 6389, 6717,    7000};
+
+
+
+
+
+
 //double dist2(double eta1, double phi1, double eta2, double phi2)
 double dist2(const ROOT::Math::PtEtaPhiM4D<float> &j1, const ROOT::Math::PtEtaPhiM4D<float> &j2)
 {
@@ -44,10 +56,10 @@ double dist2(const ROOT::Math::PtEtaPhiM4D<float> &j1, const ROOT::Math::PtEtaPh
 const bool withoutRes = false; //without residual corrections?
 
 const string jecTagCHS = "Summer16_07Aug2017";
-const int versionCHS = 7;
+const int versionCHS = 11;
 
 const string jecTagPUPPI = "Summer16_07Aug2017";
-const int versionPUPPI = 7;
+const int versionPUPPI = 11;
 
 //const string jecTagPUPPI = "Spring16_23Sep2016";
 //const int versionPUPPI = 2;
@@ -121,9 +133,6 @@ void matching::Histos::Init(TList *fOutput_)
     fOutput = fOutput_;
 
     TH1::SetDefaultSumw2();
-    const vector<double> etaBins2  = { 0, 0.261, 0.522, 0.783, 1.044, 1.305, 1.479, 1.653, 1.93, 2.172, 2.322, 2.5, 2.65, 2.853, 2.964, 3.139, 3.489, 3.839, 5.191};
-
-    const vector<double> Ptbinning = {0, 1, 5, 6, 8, 10, 12, 15, 18, 21, 24, 28, 32, 37, 43, 49, 56, 64, 74, 84,97, 114, 133, 153, 174, 196, 220, 245, 272, 300, 330, 362, 395, 430, 468,507, 548, 592, 638, 686, 737, 790, 846, 905, 967,1032, 1101, 1172, 1248, 1327, 1410, 1497, 1588, 1684, 1784, 1890,  2000,2116, 2238, 2366, 2500, 2640, 2787, 2941, 3103, 3273, 3450, 3637, 3832,4037, 4252, 4477, 4713, 4961, 5220, 5492, 5777, 6076, 6389, 6717,    7000};
 
     const int nAsym = 120;
     vector<double> asymBins;
@@ -134,6 +143,10 @@ void matching::Histos::Init(TList *fOutput_)
     for(double s = 0.9; s <= 1.6; s += 0.7/70)
         jecBins.push_back(s);
 
+    vector<double> rhoBins;
+    for(double s = 10.5; s <= 70; ++s)
+        rhoBins.push_back(s);
+
     for(int i = 0; i < nPer; ++i) {
         char per = 'A' + i;
         for(int j = 0; j < 5; ++j) {//j=0 everything, others binned
@@ -143,15 +156,23 @@ void matching::Histos::Init(TList *fOutput_)
         hJetPt[i] = new TH1D(SF("hJetPt_%c",per), SF("hJetPt_%c",per), Ptbinning.size()-1, Ptbinning.data());
         fOutput->Add(hJetPt[i]);
 
-        hJECpuppi[i] = new TH3D(SF("hJECpuppi_%c",per), SF("hJECpuppi_%c",per), etaBins2.size()-1, etaBins2.data(),
-                                                                                Ptbinning.size()-1, Ptbinning.data(),
-                                                                                jecBins.size()-1, jecBins.data());
-        fOutput->Add(hJECpuppi[i]);
-        hJECchs[i] = new TH3D(SF("hJECchs_%c",per), SF("hJECchs_%c",per), etaBins2.size()-1, etaBins2.data(),
-                                                                          Ptbinning.size()-1, Ptbinning.data(),
-                                                                          jecBins.size()-1, jecBins.data());
+        hJetPtInc[i] = new TH1D(SF("hJetPtInc_%c",per), SF("hJetPtInc_%c",per), Ptbinning.size()-1, Ptbinning.data());
+        fOutput->Add(hJetPtInc[i]);
 
-        fOutput->Add(hJECchs[i]);
+
+
+        hRhopuppi[i] = new TH3D(SF("hRhopuppi_%c",per), SF("hRhopuppi_%c",per), etaBins2.size()-1, etaBins2.data(),
+                                                                          Ptbinning.size()-1, Ptbinning.data(),
+                                                                          rhoBins.size()-1, rhoBins.data());
+        fOutput->Add(hRhopuppi[i]);
+
+
+        hRhochs[i] = new TH3D(SF("hRhochs_%c",per), SF("hRhochs_%c",per), etaBins2.size()-1, etaBins2.data(),
+                                                                          Ptbinning.size()-1, Ptbinning.data(),
+                                                                          rhoBins.size()-1, rhoBins.data());
+        fOutput->Add(hRhochs[i]);
+
+
         hEtaPtCHS[i] =  new TH2D(SF("hEtaPtCHS_%c",per), SF("hEtaPtCHS_%c",per), etaBins2.size()-1, etaBins2.data(),Ptbinning.size()-1, Ptbinning.data() );
         fOutput->Add(hEtaPtCHS[i]);
         hEtaPtPUPPI[i] = new TH2D(SF("hEtaPtPUPPI_%c",per), SF("hEtaPtPUPPI_%c",per), etaBins2.size()-1, etaBins2.data(),Ptbinning.size()-1, Ptbinning.data() );
@@ -250,8 +271,11 @@ Bool_t matching::Process(Long64_t entry)
    //
    // The return value is currently not used.
 
+   //cout << "I am reading event " << entry << endl;
+
    fReader.SetEntry(entry);
 
+    //cout << "Init start " <<entry <<" "<< __LINE__ << endl;
    if(entry % 100000 == 0)
        cout << "Event " << entry << endl;
 
@@ -269,8 +293,10 @@ Bool_t matching::Process(Long64_t entry)
         jetCorrsCHS.Init(isMC, jecTagCHS, period, versionCHS, "AK4PFchs", "", dumy);
         jetCorrsPUPPI.Init(isMC, jecTagPUPPI, period, versionPUPPI, "AK4PFPuppi", "", dumy);
         currFile = fileName;
+        cout << "JEC init succesfull" << endl;
     }
 
+    //cout << "Init start " <<entry <<" "<< __LINE__ << endl;
 
     CorrectJets(chsJets,   *rho, jetCorrsCHS);
     CorrectJets(puppiJets, *rho, jetCorrsPUPPI);
@@ -281,6 +307,9 @@ Bool_t matching::Process(Long64_t entry)
 
     if(chsJets->size() < 1 || puppiJets->size() < 1) return 0;
 
+
+
+    //cout << "Init start " <<entry <<" "<< __LINE__ << endl;
 
     double wgt, wgtTot;
     int id;
@@ -293,27 +322,50 @@ Bool_t matching::Process(Long64_t entry)
     //cout << "Info " << CHSjetPt[0]<<" "<< id <<" "<< (*CHStriggerBit).at(id) << endl;
     if(triggerBit->at(id) != 1) return 0;
 
-
-
     h.Fill1D(h.hJetPt, chsJets->at(0).p4.Pt());
+
+
+    for(unsigned i = 0; i < chsJets->size(); ++i) {
+        h.Fill1D(h.hJetPtInc, chsJets->at(i).p4.Pt());
+    }
+
+
+    //cout << "Init start " <<entry <<" "<< __LINE__ << endl;
+    //cout << "Second part OK" << endl;
+
+
 
     //cout << CHSjetPt[0] << " "<< CHSjetPt[0]*(1+CHSjetUnc[0]) <<" "<< CHSjetPt[0]*(1-CHSjetUnc[0]) << endl;
 
 
     for (unsigned i = 0; i < puppiJets->size(); ++i) {
-        double aEta = abs(puppiJets->at(i).p4.Eta());
+        double eta = puppiJets->at(i).p4.Eta();
         double pt = puppiJets->at(i).p4.Pt();
-        h.Fill3D(h.hJECpuppi, aEta, pt, 1);
+        double area = puppiJets->at(i).area;
+
+        //double CorFactorRes, Unc;
+        //vector<string> dumy;
+        //double corr = jetCorrsPUPPI.JEC_CHScorrections(pt, eta, area, *rho, dumy, CorFactorRes, Unc);
+
+        h.Fill3D(h.hRhopuppi, abs(eta), pt, *rho);
     }
+    //cout << "Init start " <<entry <<" "<< __LINE__ << endl;
     for (unsigned i = 0; i < chsJets->size(); ++i) {
-        double aEta = abs(chsJets->at(i).p4.Eta());
-        double pt   = chsJets->at(i).p4.Pt();
-        h.Fill3D(h.hJECchs, aEta, pt, 1);
+        double eta = chsJets->at(i).p4.Eta();
+        double pt = chsJets->at(i).p4.Pt();
+        double area = chsJets->at(i).area;
+
+        //double CorFactorRes, Unc;
+        //vector<string> dumy;
+        //double corr = jetCorrsCHS.JEC_CHScorrections(pt, eta, area, *rho, dumy, CorFactorRes, Unc);
+
+        h.Fill3D(h.hRhochs, abs(eta), pt, *rho);
 
         if (pt >= jetSel) {
-            h.Fill2D(h.hEtaPtCHS, aEta, pt);
+            h.Fill2D(h.hEtaPtCHS, abs(eta), pt);
         }
     }
+    //cout << "Init start " <<entry <<" "<< __LINE__ << endl;
 
     set<int> Indx;
     for(unsigned i = 0; i < chsJets->size(); ++i)

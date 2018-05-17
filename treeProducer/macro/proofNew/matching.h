@@ -238,6 +238,7 @@ public :
    TTreeReaderValue<vector<bool>> triggerBit = {fReader, "triggerBit"};
    TTreeReaderArray<int> triggerPre = {fReader, "triggerPre"};
 
+    TH1D* hJetPtIncCovTemp,  *hJetPtIncCovTempTot;
     static const int nPer = 8;
     struct Histos {
         TList  *fOutput;
@@ -245,9 +246,10 @@ public :
         int fileId;
         array<TH3D*,nPer> hBalEtaPt[5];
         array<TH1D*,nPer> hJetPt;
+        array<TH1D*,nPer> hJetPtInc;
                                           
-        array<TH3D*,nPer> hJECpuppi;
-        array<TH3D*,nPer> hJECchs;
+        array<TH3D*,nPer> hRhopuppi;
+        array<TH3D*,nPer> hRhochs;
                                           
         array<TH2D*,nPer> hEtaPtCHS;
         array<TH2D*,nPer> hEtaPtPUPPI;
