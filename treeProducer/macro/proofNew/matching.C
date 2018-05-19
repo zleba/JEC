@@ -236,13 +236,11 @@ void CorrectJets(TTreeReaderValue<std::vector<QCDjet> > &Jets, double rho, JECs 
 
 void matching::DoMikkoMatching(int fileId)
 {
-    //cout << "MIKKO " << __LINE__ << endl;
 
     if(chsJets->size() < 2 || puppiJets->size() < 1) return;
 
     auto   CHStag   = chsJets->at(0).p4;
     auto   CHSprobe = chsJets->at(1).p4;
-    //cout << "MIKKO " << __LINE__ << endl;
 
     if(gRandom->Uniform() < 0.5) swap(CHStag, CHSprobe);
 
@@ -251,16 +249,11 @@ void matching::DoMikkoMatching(int fileId)
 
     //Check trigger efficiency
 
-    //cout << "MIKKO " << __LINE__ << endl;
     double wgt, wgtTot;
     int id;
     tie(wgt,wgtTot,id) = lum.GetWeightID(fileId, CHStag.Pt() );
     if(wgt == 0 || id < 0)  return;
-    //h.w = wgt;
-    //h.wTot = wgtTot;
-    //h.fileId = fileId;
 
-    //cout << "MIKKO " << __LINE__ << endl;
     if(triggerBit->at(id) != 1) return;
 
     //Calculate the variable ala 
@@ -275,7 +268,6 @@ void matching::DoMikkoMatching(int fileId)
             break;
         }
     }
-    //cout << "MIKKO " << __LINE__ << endl;
     if(m == -1) return; //not found
 
     auto PUPPIprobe = puppiJets->at(m).p4;
@@ -286,7 +278,6 @@ void matching::DoMikkoMatching(int fileId)
     double var3 = PUPPIprobe.Pt() / CHSprobe.Pt();
     double var4 = PUPPIprobe.Pt();
 
-    //cout << "MIKKO " << __LINE__ << endl;
     double pTtag = CHStag.Pt();
     double aeta   = abs(PUPPIprobe.Eta());
     auto fillHist = [&](int fId, double w) {
@@ -296,12 +287,12 @@ void matching::DoMikkoMatching(int fileId)
         h.hProf[1][fId]->Fill(aeta, pTtag, var2, w);
         h.hProf[2][fId]->Fill(aeta, pTtag, var3, w);
         h.hProf[3][fId]->Fill(aeta, pTtag, var4, w);
-        h.hProf[4][fId]->Fill(aeta, var4,  var3, w);
+        h.hProf[4][fId]->Fill(aeta, var4,  var3, w); //resambles the old way
 
         if(chsJets->size() >= 3) {
             double pM = (chsJets->at(0).p4.Pt() + chsJets->at(1).p4.Pt())/2;
             double p3 =  chsJets->at(2).p4.Pt();
-            if(p3 / pM > 0.3)
+            if(p3 / pM > 0.3) //skip alpha > 0.3
                 return;
         }
         h.hProfBB[0][fId]->Fill(aeta, pTtag, var1, w);
@@ -310,13 +301,10 @@ void matching::DoMikkoMatching(int fileId)
         h.hProfBB[3][fId]->Fill(aeta, pTtag, var4, w);
         h.hProfBB[4][fId]->Fill(aeta, var4,  var3, w);
     };
-    //cout << "MIKKO " << __LINE__ << endl;
 
     fillHist(0, wgtTot);
     fillHist(fileId, wgt);
 
-
-    //cout << "MIKKO " << __LINE__ << endl;
 
 }
 
