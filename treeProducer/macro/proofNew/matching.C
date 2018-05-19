@@ -160,6 +160,15 @@ void matching::Histos::Init(TList *fOutput_)
         fOutput->Add(hJetPtInc[i]);
 
 
+        for(int k = 0; k < 5; ++k) {
+            hProf[k][i] = new TProfile2D(SF("hProf%d_%c",k+1, per), SF("hProf%d_%c",k+1, per), etaBins2.size()-1, etaBins2.data(),
+                                                                          Ptbinning.size()-1, Ptbinning.data());
+            fOutput->Add(hProf[k][i]);
+            hProfBB[k][i] = new TProfile2D(SF("hProfBB%d_%c",k+1, per), SF("hProfBB%d_%c",k+1, per), etaBins2.size()-1, etaBins2.data(),
+                                                                          Ptbinning.size()-1, Ptbinning.data());
+            fOutput->Add(hProfBB[k][i]);
+        }
+
 
         hRhopuppi[i] = new TH3D(SF("hRhopuppi_%c",per), SF("hRhopuppi_%c",per), etaBins2.size()-1, etaBins2.data(),
                                                                           Ptbinning.size()-1, Ptbinning.data(),
@@ -220,37 +229,95 @@ void CorrectJets(TTreeReaderValue<std::vector<QCDjet> > &Jets, double rho, JECs 
 
     }
     sort(Jets->begin(), Jets->end(), [](const QCDjet &a, const QCDjet &b) {return a.p4.Pt() > b.p4.Pt();});
+    auto pEnd = std::remove_if (Jets->begin(), Jets->end(), [](const QCDjet &a) {return  a.p4.Pt() < 20;}); 
+    Jets->resize(pEnd - Jets->begin());
 }
 
-/*
-void matching::DoMikkoMatching()
-{
 
-    if(chsJets->size() < 2 || puppiJets->size() < 2) return;
+void matching::DoMikkoMatching(int fileId)
+{
+    //cout << "MIKKO " << __LINE__ << endl;
+
+    if(chsJets->size() < 2 || puppiJets->size() < 1) return;
 
     auto   CHStag   = chsJets->at(0).p4;
     auto   CHSprobe = chsJets->at(1).p4;
+    //cout << "MIKKO " << __LINE__ << endl;
 
     if(gRandom->Uniform() < 0.5) swap(CHStag, CHSprobe);
 
+
+    if(abs(CHStag.Eta()) > 1.3) return;
+
     //Check trigger efficiency
 
+    //cout << "MIKKO " << __LINE__ << endl;
     double wgt, wgtTot;
     int id;
     tie(wgt,wgtTot,id) = lum.GetWeightID(fileId, CHStag.Pt() );
     if(wgt == 0 || id < 0)  return;
-    h.w = wgt;
-    h.wTot = wgtTot;
-    h.fileId = fileId;
+    //h.w = wgt;
+    //h.wTot = wgtTot;
+    //h.fileId = fileId;
 
+    //cout << "MIKKO " << __LINE__ << endl;
     if(triggerBit->at(id) != 1) return;
 
     //Calculate the variable ala 
     //https://indico.cern.ch/event/544604/contributions/2210109/attachments/1294031/1928613/Giugno-17-2016_-_CaloScouting.pdf
 
-    double var1 =     CHStag.Pt();
+
+    int m = -1;
+    for(int j = 0; j < (int)puppiJets->size(); ++j) {
+        double d2 = dist2(puppiJets->at(j).p4, CHSprobe);
+        if(d2 < 0.2*0.2) {
+            m = j;
+            break;
+        }
+    }
+    //cout << "MIKKO " << __LINE__ << endl;
+    if(m == -1) return; //not found
+
+    auto PUPPIprobe = puppiJets->at(m).p4;
+
+
+    double var1 = PUPPIprobe.Pt() /  CHStag.Pt();
+    double var2 = CHSprobe.Pt() /  CHStag.Pt();
+    double var3 = PUPPIprobe.Pt() / CHSprobe.Pt();
+    double var4 = PUPPIprobe.Pt();
+
+    //cout << "MIKKO " << __LINE__ << endl;
+    double pTtag = CHStag.Pt();
+    double aeta   = abs(PUPPIprobe.Eta());
+    auto fillHist = [&](int fId, double w) {
+        //cout << "Fill begin " << var1 << " "<< var2 <<" "<< var3 <<" "<<var4 << endl;
+        //cout << "b"<<endl;
+        h.hProf[0][fId]->Fill(aeta, pTtag, var1, w);
+        h.hProf[1][fId]->Fill(aeta, pTtag, var2, w);
+        h.hProf[2][fId]->Fill(aeta, pTtag, var3, w);
+        h.hProf[3][fId]->Fill(aeta, pTtag, var4, w);
+
+        if(chsJets->size() >= 3) {
+            double pM = (chsJets->at(0).p4.Pt() + chsJets->at(1).p4.Pt())/2;
+            double p3 =  chsJets->at(2).p4.Pt();
+            if(p3 / pM > 0.3)
+                return;
+        }
+        h.hProfBB[0][fId]->Fill(aeta, pTtag, var1, w);
+        h.hProfBB[1][fId]->Fill(aeta, pTtag, var2, w);
+        h.hProfBB[2][fId]->Fill(aeta, pTtag, var3, w);
+        h.hProfBB[3][fId]->Fill(aeta, pTtag, var4, w);
+    };
+    //cout << "MIKKO " << __LINE__ << endl;
+
+    fillHist(0, wgtTot);
+    fillHist(fileId, wgt);
+
+
+    //cout << "MIKKO " << __LINE__ << endl;
+
 }
-*/
+
 
 
 Bool_t matching::Process(Long64_t entry)
@@ -279,6 +346,8 @@ Bool_t matching::Process(Long64_t entry)
    if(entry % 100000 == 0)
        cout << "Event " << entry << endl;
 
+
+
     TString fileName =  fReader.GetTree()->GetCurrentFile()->GetName();
     int fileId = fileName[fileName.Length()-6] -'A';
     if(fileName != currFile) {
@@ -306,6 +375,10 @@ Bool_t matching::Process(Long64_t entry)
 
 
     if(chsJets->size() < 1 || puppiJets->size() < 1) return 0;
+
+
+    DoMikkoMatching(fileId);
+
 
 
 

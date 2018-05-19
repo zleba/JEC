@@ -28,6 +28,7 @@
 #include "TH3D.h"
 #include "TH2D.h"
 #include "TH1D.h"
+#include "TProfile2D.h"
 
 #include "../../plugins/JEC.h"
 
@@ -247,6 +248,8 @@ public :
         array<TH3D*,nPer> hBalEtaPt[5];
         array<TH1D*,nPer> hJetPt;
         array<TH1D*,nPer> hJetPtInc;
+
+        array<TProfile2D*,nPer> hProf[5], hProfBB[5];
                                           
         array<TH3D*,nPer> hRhopuppi;
         array<TH3D*,nPer> hRhochs;
@@ -278,6 +281,7 @@ public :
     TString currFile ="";
 
 
+    void DoMikkoMatching(int fileId);
 
 
    matching(TTree * /*tree*/ =0) { }

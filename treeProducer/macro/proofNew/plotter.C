@@ -40,6 +40,8 @@ struct PLOTTER {
     vector<TH2D *> hEtaPtPUPPI;
     vector<TH2D *> hEtaPtPUPPIalone;
 
+    vector<TProfile2D*> hProf[4], hProfBB[4];
+
     TF2 *f2;
     TH2D * hFit;
 
@@ -63,6 +65,8 @@ struct PLOTTER {
         hEtaPtPUPPI.resize(nPer);
         hEtaPtPUPPIalone.resize(nPer);
 
+        for(auto & h : hProf) h.resize(nPer);
+        for(auto & h : hProfBB) h.resize(nPer);
 
         for(int i = 0; i < nPer; ++i) {
             char per = 'A' + i;
@@ -71,6 +75,15 @@ struct PLOTTER {
                 //hBalEtaPtAll[j][i] = dynamic_cast<TH3D*>(fIn->Get(SF("hBalEtaPt_%c",  per)));
                 assert(hBalEtaPtAll[j][i]);
             }
+
+            for(int j = 0; j < sizeof(hProf)/sizeof(hProf[0]); ++j) {
+                hProf[j][i] = dynamic_cast<TProfile2D*>(fIn->Get(SF("hProf%d_%c",j+1, per)));
+                hProfBB[j][i] = dynamic_cast<TProfile2D*>(fIn->Get(SF("hProfBB%d_%c",j+1, per)));
+                assert(hProf[j][i]);
+                assert(hProfBB[j][i]);
+            }
+
+
             hBalEtaPtAllUp[i] = dynamic_cast<TH3D*>(fIn->Get(SF("hBalEtaPt0_%c",per)));
             assert(hBalEtaPtAllUp[i]);
             hBalEtaPtAllDn[i] = dynamic_cast<TH3D*>(fIn->Get(SF("hBalEtaPt0_%c",per)));
@@ -102,6 +115,9 @@ struct PLOTTER {
     void AsymmetryEtaPtTimeDep(int eta1, int eta2);
     void AsymmetryEtaPtPileUpDep(int eta1, int eta2);
 
+    void PlotProfiles(int type, int per);
+    void PlottMatchingCorr();
+
 
     vector<double> MeanAsym(int shift=0, TString style="");
     void JEC();
@@ -113,6 +129,178 @@ struct PLOTTER {
     void MatchingFactorsYbased(vector<double> res, bool allPer = true);
 
 };
+
+
+void PLOTTER::PlotProfiles(int type, int per)
+{
+    const int pMax = per > 0 ? 8  : 1;
+    TCanvas *can = new TCanvas("can", "can", 800, 500);
+
+    if(type != 3)
+        SetLeftRight(0.08, 0.03);
+    else
+        SetLeftRight(0.28, 0.13);
+
+    DividePad(vector<double>(7,1.), vector<double>(6,1.));
+
+    gStyle->SetOptStat(0);
+
+    for(int i = 1; i <= 7*6; ++i) {
+        can->cd(i);
+        TProfile *prof[8];
+        for(int p = 0; p < pMax; ++p) {
+            prof[p] = hProf[type][p]->ProfileY(SF("profName%d%d",type, rand()), i, i, "i");
+            //hProf[type][0]->Draw();
+            for(int i = 1; i <= prof[p]->GetNbinsX(); ++i) {
+                if(isnan(prof[p]->GetBinContent(i)))
+                    prof[p]->SetBinContent(i,0);
+                if(isnan(prof[p]->GetBinError(i)))
+                    prof[p]->SetBinError(i,0);
+                //cout << i <<" "<< prof->GetBinContent(i) <<" "<< prof->GetBinError(i) << endl;
+            }
+        }
+        prof[0]->SetLineColor(1);
+        prof[0]->Draw("hist");
+        for(int p = 1; p < pMax; ++p) {
+            prof[p]->SetLineColor(p+1);
+            prof[p]->Draw("hist same");
+        }
+        prof[0]->Draw("hist same");
+
+
+        GetXaxis()->SetRangeUser(84, 2000);
+        if(type == 3) {
+            GetYaxis()->SetRangeUser(84, 2000);
+            gPad->SetLogy();
+        }
+        else {
+            GetYaxis()->SetRangeUser(0.5, 1.5);
+            gPad->SetLogy(0);
+
+        }
+
+        GetXaxis()->SetMoreLogLabels();
+        GetYaxis()->SetMoreLogLabels();
+        gPad->SetLogx();
+
+    }
+
+    can->Print(outName);
+    //can->Print(outName);
+    can->Clear();
+    delete can;
+}
+
+
+pair<TGraphErrors*, TGraphErrors*> GetMikkoCorr(vector<TProfile2D*> *hProf, int i)
+{
+    TProfile  *prof[4];
+    for(int type = 0; type < 4; ++type)
+        prof[type] = hProf[type][0]->ProfileY(SF("profName%d%d",type, rand()), i, i, "i");
+
+    TGraphErrors *gr1 = new TGraphErrors();
+    TGraphErrors *gr2 = new TGraphErrors();
+
+    for(int k = 1; k <= prof[0]->GetNbinsX(); ++k) {
+        double v1 = prof[0]->GetBinContent(k);
+        double v2 = prof[1]->GetBinContent(k);
+        double v3 = prof[2]->GetBinContent(k);
+        double e3 = prof[2]->GetBinError(k);
+        double v4 = prof[3]->GetBinContent(k);
+        double e4 = prof[3]->GetBinError(k);
+        double r = v2 != 0 ? v1 / v2 : 0;
+        gr1->SetPoint(k-1, v4, r); 
+        gr1->SetPointError(k-1, e4, e3); 
+
+        gr2->SetPoint(k-1, v4, v3); 
+        gr2->SetPointError(k-1, e4, e3); 
+        //cout << k << " " << v4 << " "<< r << endl;
+    }
+    return make_pair(gr1, gr2);
+
+}
+
+
+
+
+
+void PLOTTER::PlottMatchingCorr()
+{
+    TCanvas *can = new TCanvas("can", "can", 800, 500);
+    SetLeftRight(0.08, 0.03);
+
+    DividePad(vector<double>(7,1.), vector<double>(6,1.));
+
+    gStyle->SetOptStat(0);
+
+    for(int i = 1; i <= 7*6; ++i) {
+        can->cd(i);
+        //TProfile *prof[4], *profBB[4];
+        //for(int type = 0; type < 4; ++type)
+            //prof[type] = hProf[type][0]->ProfileY(SF("profName%d%d",type, rand()), i, i, "i");
+        //TGraphErrors *gr1 = new TGraphErrors();
+        //TGraphErrors *gr2 = new TGraphErrors();
+
+        TGraphErrors *gr1, *gr2;
+        tie(gr1, gr2) = GetMikkoCorr(hProf, i);
+        TGraphErrors *gr1BB, *gr2BB;
+        tie(gr1BB, gr2BB) = GetMikkoCorr(hProfBB, i);
+
+        /*
+        for(int k = 1; k <= prof[0]->GetNbinsX(); ++k) {
+            double v1 = prof[0]->GetBinContent(k);
+            double v2 = prof[1]->GetBinContent(k);
+            double v3 = prof[2]->GetBinContent(k);
+            double e3 = prof[2]->GetBinError(k);
+            double v4 = prof[3]->GetBinContent(k);
+            double e4 = prof[3]->GetBinError(k);
+            double r = v2 != 0 ? v1 / v2 : 0;
+            gr1->SetPoint(k-1, v4, r); 
+            gr1->SetPointError(k-1, e4, e3); 
+
+            gr2->SetPoint(k-1, v4, v3); 
+            gr2->SetPointError(k-1, e4, e3); 
+            cout << k << " " << v4 << " "<< r << endl;
+        }
+        */
+
+        hBalEtaPtAll[0][0]->GetXaxis()->SetRange(i,i);
+        TH2D *hTemp = dynamic_cast<TH2D*>(hBalEtaPtAll[0][0]->Project3D(SF("%d_yz",rand()))); 
+        assert(hTemp);
+        TProfile *profOrg = hTemp->ProfileY();
+
+
+        profOrg->Draw();
+
+
+
+
+        gr1->Draw("pe");
+        gr1BB->SetLineColor(kRed);
+        gr1BB->Draw("pe");
+
+        GetXaxis()->SetRangeUser(84, 2000);
+        GetXaxis()->SetMoreLogLabels();
+        GetYaxis()->SetMoreLogLabels();
+        GetYaxis()->SetRangeUser(0.95, 1.05);
+        gPad->SetLogx();
+
+    }
+
+    can->Print(outName);
+    //can->Print(outName);
+    can->Clear();
+    delete can;
+
+
+
+
+
+
+
+
+
+}
 
 void  PLOTTER::PlotFit(TH1D *h84, TH1D *h1000)
 {
@@ -1545,8 +1733,9 @@ void plotter()
     //TString myOut = "plots/new7.pdf";
     //plot.Init("histos/V7V7newBinning.root", myOut+"(");
 
-    TString myOut = "plots/new11.pdf";
-    plot.Init("histos/V11V11newBinning.root", myOut+"(");
+    TString myOut = "plots/profilesNew.pdf";
+    //plot.Init("histos/V11V11newBinning.root", myOut+"(");
+    plot.Init("histos/profilesNew.root", myOut+"(");
 
 
     //plot.Init("histos/Summer16_07Aug2017V5__Summer16_07Aug2017V5noResNew.root", myOut+"(");
@@ -1578,10 +1767,17 @@ void plotter()
     plot.perID = 0;
     plot.Unmatched();
     plot.outName = myOut;
+    plot.PlotProfiles(0, -1);
+    plot.PlotProfiles(1, -1);
+    plot.PlotProfiles(2, -1);
+    plot.PlotProfiles(3, -1);
 
+    plot.PlottMatchingCorr();
+    /*
     for(int i = 0; i < 8; ++i)
         plot.AsymmetryEtaPtTimeDep(5*i+1, 5*i+5);
     plot.AsymmetryEtaPtTimeDep(5*8+1, 5*8+2);
+    */
 
     //plot.AsymmetryEtaPtTimeDep(6, 10);
     //plot.AsymmetryEtaPtTimeDep(11, 15);
