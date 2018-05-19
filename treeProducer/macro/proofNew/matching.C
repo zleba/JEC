@@ -160,7 +160,7 @@ void matching::Histos::Init(TList *fOutput_)
         fOutput->Add(hJetPtInc[i]);
 
 
-        for(int k = 0; k < 5; ++k) {
+        for(int k = 0; k < 6; ++k) {
             hProf[k][i] = new TProfile2D(SF("hProf%d_%c",k+1, per), SF("hProf%d_%c",k+1, per), etaBins2.size()-1, etaBins2.data(),
                                                                           Ptbinning.size()-1, Ptbinning.data());
             fOutput->Add(hProf[k][i]);
@@ -296,6 +296,7 @@ void matching::DoMikkoMatching(int fileId)
         h.hProf[1][fId]->Fill(aeta, pTtag, var2, w);
         h.hProf[2][fId]->Fill(aeta, pTtag, var3, w);
         h.hProf[3][fId]->Fill(aeta, pTtag, var4, w);
+        h.hProf[4][fId]->Fill(aeta, var4,  var3, w);
 
         if(chsJets->size() >= 3) {
             double pM = (chsJets->at(0).p4.Pt() + chsJets->at(1).p4.Pt())/2;
@@ -307,6 +308,7 @@ void matching::DoMikkoMatching(int fileId)
         h.hProfBB[1][fId]->Fill(aeta, pTtag, var2, w);
         h.hProfBB[2][fId]->Fill(aeta, pTtag, var3, w);
         h.hProfBB[3][fId]->Fill(aeta, pTtag, var4, w);
+        h.hProfBB[4][fId]->Fill(aeta, var4,  var3, w);
     };
     //cout << "MIKKO " << __LINE__ << endl;
 
