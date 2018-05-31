@@ -160,7 +160,7 @@ void matching::Histos::Init(TList *fOutput_)
         fOutput->Add(hJetPtInc[i]);
 
 
-        for(int k = 0; k < 6; ++k) {
+        for(int k = 0; k < 9; ++k) {
             hProf[k][i] = new TProfile2D(SF("hProf%d_%c",k+1, per), SF("hProf%d_%c",k+1, per), etaBins2.size()-1, etaBins2.data(),
                                                                           Ptbinning.size()-1, Ptbinning.data());
             fOutput->Add(hProf[k][i]);
@@ -242,10 +242,16 @@ void matching::DoMikkoMatching(int fileId)
     auto   CHStag   = chsJets->at(0).p4;
     auto   CHSprobe = chsJets->at(1).p4;
 
+
+    double dPhi = abs(CHStag.Phi() - CHSprobe.Phi());
+    dPhi = min(dPhi, 2*M_PI - dPhi);
+    if (dPhi < 2.8) return;
+
+
     if(gRandom->Uniform() < 0.5) swap(CHStag, CHSprobe);
 
 
-    if(abs(CHStag.Eta()) > 1.3) return;
+    //if(abs(CHStag.Eta()) > 1.3) return;
 
     //Check trigger efficiency
 
@@ -278,6 +284,8 @@ void matching::DoMikkoMatching(int fileId)
     double var3 = PUPPIprobe.Pt() / CHSprobe.Pt();
     double var4 = PUPPIprobe.Pt();
 
+    double avgProbe = sqrt(CHSprobe.Pt() * PUPPIprobe.Pt());
+
     double pTtag = CHStag.Pt();
     double aeta   = abs(PUPPIprobe.Eta());
     auto fillHist = [&](int fId, double w) {
@@ -287,7 +295,10 @@ void matching::DoMikkoMatching(int fileId)
         h.hProf[1][fId]->Fill(aeta, pTtag, var2, w);
         h.hProf[2][fId]->Fill(aeta, pTtag, var3, w);
         h.hProf[3][fId]->Fill(aeta, pTtag, var4, w);
-        h.hProf[4][fId]->Fill(aeta, var4,  var3, w); //resambles the old way
+        h.hProf[4][fId]->Fill(aeta, PUPPIprobe.Pt(), var3, w); //resambles the old way
+        h.hProf[5][fId]->Fill(aeta, CHSprobe.Pt(),   var3, w); 
+        h.hProf[6][fId]->Fill(aeta, avgProbe,        var3, w); 
+        h.hProf[7][fId]->Fill(abs(CHSprobe.Eta()), pTtag,   CHSprobe.Pt(), w); 
 
         if(chsJets->size() >= 3) {
             double pM = (chsJets->at(0).p4.Pt() + chsJets->at(1).p4.Pt())/2;
@@ -299,7 +310,10 @@ void matching::DoMikkoMatching(int fileId)
         h.hProfBB[1][fId]->Fill(aeta, pTtag, var2, w);
         h.hProfBB[2][fId]->Fill(aeta, pTtag, var3, w);
         h.hProfBB[3][fId]->Fill(aeta, pTtag, var4, w);
-        h.hProfBB[4][fId]->Fill(aeta, var4,  var3, w);
+        h.hProfBB[4][fId]->Fill(aeta, PUPPIprobe.Pt(), var3, w); //resambles the old way
+        h.hProfBB[5][fId]->Fill(aeta, CHSprobe.Pt(),   var3, w); 
+        h.hProfBB[6][fId]->Fill(aeta, avgProbe,        var3, w); 
+        h.hProfBB[7][fId]->Fill(abs(CHSprobe.Eta()), pTtag,   CHSprobe.Pt(), w); 
     };
 
     fillHist(0, wgtTot);

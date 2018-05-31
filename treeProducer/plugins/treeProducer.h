@@ -111,21 +111,15 @@ struct Parameters {
     edm::EDGetTokenT<LHERunInfoProduct> runInfoToken;
     std::vector<std::string> triggerNames_;
     std::string srcBtag_;
-    std::string btagMin_;
     edm::EDGetTokenT<pat::TriggerObjectStandAloneCollection> triggerObjectsToken;
   
 
     HLTConfigProvider hltConfig_;
 
-    double etaMax_;
-    double ptMin_ ;
-    double ptMinLeading_;
     bool isMC_ ;
     bool isPrint_ ;
     bool saveWeights_;
     bool debug_ ;
-    double GenptMin_;
-    double GenetaMax_;
     string curFile_;
     string jetType_;
 
@@ -162,19 +156,13 @@ struct Parameters {
 
         triggerObjectsToken  = iC.consumes<pat::TriggerObjectStandAloneCollection>(cfg.getParameter<edm::InputTag>("triggerObjects"));
 
-        etaMax_               = cfg.getParameter<double>("etaMax");
-        ptMin_                = cfg.getParameter<double>("ptMin");
-        ptMinLeading_         = cfg.getParameter<double>("ptMinLeading");
         //massMin_              = cfg.getParameter<double>("massMin");
-        btagMin_              = cfg.getParameter<double>("btagMin");
         //minMuPt_              = cfg.getParameter<double>("minMuPt");
         //minElPt_              = cfg.getParameter<double>("minElPt");
         isMC_                 = cfg.getUntrackedParameter<bool>("isMC",false);
         isPrint_              = cfg.getUntrackedParameter<bool>("isPrint",false);
         saveWeights_          = cfg.getUntrackedParameter<bool>("saveWeights",true);
         debug_                = cfg.getUntrackedParameter<bool>("debug",false);
-        GenptMin_             = cfg.getUntrackedParameter<double>("GenptMin");
-        GenetaMax_            = cfg.getUntrackedParameter<double>("GenetaMax");
 
         //cout <<"RADEK listFile " <<  cfg.getParameter<edm::InputTag>("listFile") << endl;
         curFile_      =           cfg.getParameter<string>("fileNames");
@@ -215,7 +203,6 @@ class treeProducer : public edm::EDAnalyzer
     //edm::EDGetTokenT<pat::ElectronCollection> electronsToken;
  
     //std::string srcBtag_;//,xmlFile_;
-    //double btagMin_;
 
     //---------------------------------------------------
     edm::Service<TFileService> fs_;

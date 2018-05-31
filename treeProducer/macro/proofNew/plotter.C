@@ -40,7 +40,7 @@ struct PLOTTER {
     vector<TH2D *> hEtaPtPUPPI;
     vector<TH2D *> hEtaPtPUPPIalone;
 
-    vector<TProfile2D*> hProf[5], hProfBB[5];
+    vector<TProfile2D*> hProf[8], hProfBB[8];
 
     TF2 *f2;
     TH2D * hFit;
@@ -116,6 +116,7 @@ struct PLOTTER {
     void AsymmetryEtaPtPileUpDep(int eta1, int eta2);
 
     void PlotProfiles(int type, int per);
+    void PlotProfilesOverlap();
     void PlottMatchingCorr();
 
 
@@ -136,10 +137,10 @@ void PLOTTER::PlotProfiles(int type, int per)
     const int pMax = per > 0 ? 8  : 1;
     TCanvas *can = new TCanvas("can", "can", 800, 500);
 
-    if(type != 3)
-        SetLeftRight(0.08, 0.03);
-    else
+    if(type == 3 || type == 7)
         SetLeftRight(0.28, 0.13);
+    else
+        SetLeftRight(0.08, 0.03);
 
     DividePad(vector<double>(7,1.), vector<double>(6,1.));
 
@@ -167,14 +168,14 @@ void PLOTTER::PlotProfiles(int type, int per)
 
 
         GetXaxis()->SetRangeUser(74, 2000);
-        if(type == 3) {
+        if(type == 3 || type == 7) {
             GetYaxis()->SetRangeUser(74, 2000);
             gPad->SetLogy();
         }
         else {
             if(type == 2)
                 GetYaxis()->SetRangeUser(0.91, 1.09);
-            else if(type == 4)
+            else if(type == 4 || type == 5 || type == 6)
                 GetYaxis()->SetRangeUser(0.951, 1.09);
             else
                 GetYaxis()->SetRangeUser(0.21, 1.15);
@@ -193,25 +194,31 @@ void PLOTTER::PlotProfiles(int type, int per)
 
         double l = hProf[type][0]->GetXaxis()->GetBinLowEdge(i);
         double u = hProf[type][0]->GetXaxis()->GetBinUpEdge(i);
-        DrawLatexUp(-1, SF("%1.2f < |#eta| < %1.2f", l, u), type == 3 ? 8 : -1);
+        DrawLatexUp(-1, SF("%1.2f < |#eta| < %1.2f", l, u), (type == 3||type ==7) ? 8 : -1);
 
         if(i == 1) {
             //GetYaxis()->SetTitle("#LT p_{T}^{PUPPI}#GT/#LT p_{T}^{CHS}#GT");
             if(type == 3)      DrawLatexLeft(4.4, "#LT p_{T}^{PUPPI} (probe) #GT [GeV]", -1, "t>");
+            else if(type == 7) DrawLatexLeft(4.4, "#LT p_{T}^{CHS} (probe) #GT [GeV]", -1, "t>");
             else if(type == 0) DrawLatexLeft(4.4, "#LT p_{T}^{PUPPI} (probe) / p_{T}^{CHS} (tag) #GT", -1, "t>");
             else if(type == 1) DrawLatexLeft(4.4, "#LT p_{T}^{CHS} (probe) / p_{T}^{CHS} (tag) #GT", -1, "t>");
-            else if(type == 2 || type == 4)
+            else if(type == 2 || type == 4 || type == 5 || type == 6)
                                DrawLatexLeft(4.4, "#LT p_{T}^{PUPPI} (probe) / p_{T}^{CHS} (probe) #GT", -1, "t>");
         }
         if(i == 42) {
             //GetXaxis()->SetTitle("p_{Ttag}^{CHS} [GeV]");
-            if(type != 4)
-                DrawLatexDown(3.0, "p_{T}^{CHS} (tag) [GeV]", -1, "r");
-            else
+            if(type == 4)
                 DrawLatexDown(3.0, "p_{T}^{PUPPI} (probe) [GeV]", -1, "r");
+            else if(type == 5)
+                DrawLatexDown(3.0, "p_{T}^{CHS} (probe) [GeV]", -1, "r");
+            else if(type == 6)
+                DrawLatexDown(3.0, "#sqrt{p_{T}^{CHS} p_{T}^{PUPPI}} (probe) [GeV]", -1, "r");
+            else
+                DrawLatexDown(3.0, "p_{T}^{CHS} (tag) [GeV]", -1, "r");
+
         }
 
-        if( (i == 41 && type == 3) || (i == 42 && type != 3)) {
+        if( (i == 41 && (type == 3 || type == 7)) || (i == 42 && (type != 3  && type != 7))) {
             TLegend *leg = new TLegend(0.2, 0.55, 0.65, 0.85);
             leg->SetBorderSize(0);
             leg->SetTextSize(0.8*GetXaxis()->GetTitleSize());
@@ -228,6 +235,74 @@ void PLOTTER::PlotProfiles(int type, int per)
     can->Clear();
     delete can;
 }
+
+void PLOTTER::PlotProfilesOverlap()
+{
+    TCanvas *can = new TCanvas("can", "can", 800, 500);
+    SetLeftRight(0.08, 0.03);
+    DividePad(vector<double>(7,1.), vector<double>(6,1.));
+    gStyle->SetOptStat(0);
+
+    for(int i = 1; i <= 7*6; ++i) {
+        can->cd(i);
+        TProfile *prof[8], *profBB[8];
+        for(int type = 0; type < 7; ++type) {
+            prof[type]   = hProf[type][0]->ProfileY(SF("profName%d%d",type, rand()), i, i, "i");
+            profBB[type] = hProfBB[type][0]->ProfileY(SF("profNameBB%d%d",type, rand()), i, i, "i");
+        }
+
+        auto plot = [&](int i, int c, TString tag) {
+            prof[i]->SetLineColor(c);
+            prof[i]->SetMarkerColor(c);
+            prof[i]->Draw(tag);
+        };
+        plot(2,1, "e");
+        plot(4,2, "e same");
+        plot(5,3, "e same");
+
+        GetXaxis()->SetRangeUser(74, 2000);
+        GetYaxis()->SetRangeUser(0.951, 1.09);
+
+        GetYaxis()->SetNdivisions(505);
+        //GetXaxis()->SetMoreLogLabels();
+        gPad->SetLogx();
+
+
+        SetFTO({12}, {5.1}, {1.63, 3.0, 0.3, 4.4});
+        GetFrame()->SetTitle("");
+
+        double l = hProf[2][0]->GetXaxis()->GetBinLowEdge(i);
+        double u = hProf[2][0]->GetXaxis()->GetBinUpEdge(i);
+        DrawLatexUp(-1, SF("%1.2f < |#eta| < %1.2f", l, u));
+
+        if(i == 1) 
+           DrawLatexLeft(4.4, "#LT p_{T}^{PUPPI} (probe) / p_{T}^{CHS} (probe) #GT", -1, "t>");
+        if(i == 42)
+            DrawLatexDown(3.0, "p_{T} [GeV]", -1, "r");
+
+
+        if(i == 42) {
+            TLegend *leg = new TLegend(0.17, 0.45, 0.65, 0.85);
+            leg->SetBorderSize(0);
+            leg->SetTextSize(0.8*GetXaxis()->GetTitleSize());
+            leg->AddEntry(prof[2], "p_{T}^{CHS} (tag)", "ple");
+            leg->AddEntry(prof[4], "p_{T}^{PUPPI} (probe)", "ple");
+            leg->AddEntry(prof[5], "p_{T}^{CHS} (probe)", "ple");
+            leg->Draw();
+        }
+
+
+    }
+
+    can->Print(outName);
+    //can->Print(outName);
+    can->Clear();
+    delete can;
+}
+
+
+
+
 
 
 pair<TGraphErrors*, TGraphErrors*> GetMikkoCorr(vector<TProfile2D*> *hProf, int i)
@@ -1773,9 +1848,13 @@ void plotter()
     //TString myOut = "plots/new7.pdf";
     //plot.Init("histos/V7V7newBinning.root", myOut+"(");
 
-    TString myOut = "plots/profilesNew.pdf";
+    //TString nTag = "profilesCentralBB";
+    TString nTag = "profilesCentral";
+
+
+    TString myOut = "plots/"+nTag+".pdf";
     //plot.Init("histos/V11V11newBinning.root", myOut+"(");
-    plot.Init("histos/profilesNewNew.root", myOut+"(");
+    plot.Init("histos/"+nTag+".root", myOut+"");
 
 
     //plot.Init("histos/Summer16_07Aug2017V5__Summer16_07Aug2017V5noResNew.root", myOut+"(");
@@ -1803,6 +1882,8 @@ void plotter()
     return;
     */
     gStyle->SetOptStat(0);
+    plot.PlotProfilesOverlap();
+    return;
 
     plot.perID = 0;
     //plot.Unmatched();
@@ -1811,8 +1892,13 @@ void plotter()
     plot.PlotProfiles(1, -1);
     plot.PlotProfiles(2, -1);
     plot.PlotProfiles(3, -1);
+    plot.PlotProfiles(7, -1);
 
     plot.PlottMatchingCorr();
+    plot.PlotProfiles(5, -1);
+    plot.PlotProfiles(6, -1);
+
+
     plot.outName = myOut + ")";
     plot.PlotProfiles(4, -1);
     return;

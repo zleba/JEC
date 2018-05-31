@@ -249,7 +249,7 @@ public :
         array<TH1D*,nPer> hJetPt;
         array<TH1D*,nPer> hJetPtInc;
 
-        array<TProfile2D*,nPer> hProf[6], hProfBB[6];
+        array<TProfile2D*,nPer> hProf[9], hProfBB[9];
                                           
         array<TH3D*,nPer> hRhopuppi;
         array<TH3D*,nPer> hRhochs;
