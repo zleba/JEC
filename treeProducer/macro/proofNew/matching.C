@@ -33,7 +33,7 @@
 
 //const vector<double> etaBins2  = { 0, 0.261, 0.522, 0.783, 1.044, 1.305, 1.479, 1.653, 1.93, 2.172, 2.322, 2.5, 2.65, 2.853, 2.964, 3.139, 3.489, 3.839, 5.191};
 
-const vector<double> etaBins2 =  {0., 0.087, 0.174, 0.261, 0.348, 0.435, 0.522, 0.609, 0.696, 0.783, 0.879, 0.957, 1.044, 1.131, 1.218, 1.305, 1.392, 1.479, 1.566, 1.653, 1.74, 1.83, 1.93, 2.043, 2.172, 2.322, 2.5, 2.65, 2.853, 2.964, 3.139, 3.314, 3.489, 3.664, 3.839, 4.013, 4.191, 4.363, 4.538, 4.538, 4.716, 4.889, 5.191};
+const vector<double> etaBinsPos =  {0., 0.087, 0.174, 0.261, 0.348, 0.435, 0.522, 0.609, 0.696, 0.783, 0.879, 0.957, 1.044, 1.131, 1.218, 1.305, 1.392, 1.479, 1.566, 1.653, 1.74, 1.83, 1.93, 2.043, 2.172, 2.322, 2.5, 2.65, 2.853, 2.964, 3.139, 3.314, 3.489, 3.664, 3.839, 4.013, 4.191, 4.363, 4.538, 4.538, 4.716, 4.889, 5.191};
 
 
 const vector<double> Ptbinning = {0, 1, 5, 6, 8, 10, 12, 15, 18, 21, 24, 28, 32, 37, 43, 49, 56, 64, 74, 84, 97, 114, 133, 153, 174, 196, 220, 245, 272, 300, 330, 362, 395, 430, 468,507, 548, 592, 638, 686, 737, 790, 846, 905, 967,1032, 1101, 1172, 1248, 1327, 1410, 1497, 1588, 1684, 1784, 1890,  2000,2116, 2238, 2366, 2500, 2640, 2787, 2941, 3103, 3273, 3450, 3637, 3832,4037, 4252, 4477, 4713, 4961, 5220, 5492, 5777, 6076, 6389, 6717,    7000};
@@ -147,10 +147,20 @@ void matching::Histos::Init(TList *fOutput_)
     for(double s = 10.5; s <= 70; ++s)
         rhoBins.push_back(s);
 
+    //Eta binning
+    vector<double> etaBins;
+    for(auto it = etaBinsPos.rbegin(); it != etaBinsPos.rend();  ++it)
+        etaBins.push_back(-*it);
+    etaBins.insert(etaBins.end(), etaBinsPos.begin()+1, etaBinsPos.end());
+        
+    for(auto x : etaBins)
+        cout << x << endl;
+    //exit(0);
+
     for(int i = 0; i < nPer; ++i) {
         char per = 'A' + i;
         for(int j = 0; j < 5; ++j) {//j=0 everything, others binned
-            hBalEtaPt[j][i] = new TH3D(SF("hBalEtaPt%d_%c",j, per), SF("hBalEtaPt%d_%c",j, per), etaBins2.size()-1, etaBins2.data(), Ptbinning.size()-1, Ptbinning.data(),  asymBins.size()-1, asymBins.data()); //,  60, 0.8, 1.2);
+            hBalEtaPt[j][i] = new TH3D(SF("hBalEtaPt%d_%c",j, per), SF("hBalEtaPt%d_%c",j, per), etaBins.size()-1, etaBins.data(), Ptbinning.size()-1, Ptbinning.data(),  asymBins.size()-1, asymBins.data()); //,  60, 0.8, 1.2);
             fOutput->Add(hBalEtaPt[j][i]);
         }
         hJetPt[i] = new TH1D(SF("hJetPt_%c",per), SF("hJetPt_%c",per), Ptbinning.size()-1, Ptbinning.data());
@@ -161,32 +171,32 @@ void matching::Histos::Init(TList *fOutput_)
 
 
         for(int k = 0; k < 9; ++k) {
-            hProf[k][i] = new TProfile2D(SF("hProf%d_%c",k+1, per), SF("hProf%d_%c",k+1, per), etaBins2.size()-1, etaBins2.data(),
+            hProf[k][i] = new TProfile2D(SF("hProf%d_%c",k+1, per), SF("hProf%d_%c",k+1, per), etaBins.size()-1, etaBins.data(),
                                                                           Ptbinning.size()-1, Ptbinning.data());
             fOutput->Add(hProf[k][i]);
-            hProfBB[k][i] = new TProfile2D(SF("hProfBB%d_%c",k+1, per), SF("hProfBB%d_%c",k+1, per), etaBins2.size()-1, etaBins2.data(),
+            hProfBB[k][i] = new TProfile2D(SF("hProfBB%d_%c",k+1, per), SF("hProfBB%d_%c",k+1, per), etaBins.size()-1, etaBins.data(),
                                                                           Ptbinning.size()-1, Ptbinning.data());
             fOutput->Add(hProfBB[k][i]);
         }
 
 
-        hRhopuppi[i] = new TH3D(SF("hRhopuppi_%c",per), SF("hRhopuppi_%c",per), etaBins2.size()-1, etaBins2.data(),
+        hRhopuppi[i] = new TH3D(SF("hRhopuppi_%c",per), SF("hRhopuppi_%c",per), etaBins.size()-1, etaBins.data(),
                                                                           Ptbinning.size()-1, Ptbinning.data(),
                                                                           rhoBins.size()-1, rhoBins.data());
         fOutput->Add(hRhopuppi[i]);
 
 
-        hRhochs[i] = new TH3D(SF("hRhochs_%c",per), SF("hRhochs_%c",per), etaBins2.size()-1, etaBins2.data(),
+        hRhochs[i] = new TH3D(SF("hRhochs_%c",per), SF("hRhochs_%c",per), etaBins.size()-1, etaBins.data(),
                                                                           Ptbinning.size()-1, Ptbinning.data(),
                                                                           rhoBins.size()-1, rhoBins.data());
         fOutput->Add(hRhochs[i]);
 
 
-        hEtaPtCHS[i] =  new TH2D(SF("hEtaPtCHS_%c",per), SF("hEtaPtCHS_%c",per), etaBins2.size()-1, etaBins2.data(),Ptbinning.size()-1, Ptbinning.data() );
+        hEtaPtCHS[i] =  new TH2D(SF("hEtaPtCHS_%c",per), SF("hEtaPtCHS_%c",per), etaBins.size()-1, etaBins.data(),Ptbinning.size()-1, Ptbinning.data() );
         fOutput->Add(hEtaPtCHS[i]);
-        hEtaPtPUPPI[i] = new TH2D(SF("hEtaPtPUPPI_%c",per), SF("hEtaPtPUPPI_%c",per), etaBins2.size()-1, etaBins2.data(),Ptbinning.size()-1, Ptbinning.data() );
+        hEtaPtPUPPI[i] = new TH2D(SF("hEtaPtPUPPI_%c",per), SF("hEtaPtPUPPI_%c",per), etaBins.size()-1, etaBins.data(),Ptbinning.size()-1, Ptbinning.data() );
         fOutput->Add(hEtaPtPUPPI[i]);
-        hEtaPtPUPPIalone[i] = new TH2D(SF("hEtaPtPUPPIalone_%c",per), SF("hEtaPtPUPPIalone_%c",per), etaBins2.size()-1, etaBins2.data(),Ptbinning.size()-1, Ptbinning.data() );
+        hEtaPtPUPPIalone[i] = new TH2D(SF("hEtaPtPUPPIalone_%c",per), SF("hEtaPtPUPPIalone_%c",per), etaBins.size()-1, etaBins.data(),Ptbinning.size()-1, Ptbinning.data() );
         fOutput->Add(hEtaPtPUPPIalone[i]);
 
     }
@@ -287,37 +297,50 @@ void matching::DoMikkoMatching(int fileId)
     double avgProbe = sqrt(CHSprobe.Pt() * PUPPIprobe.Pt());
 
     double pTtag = CHStag.Pt();
-    double aeta   = abs(PUPPIprobe.Eta());
-    auto fillHist = [&](int fId, double w) {
+    double eta   = PUPPIprobe.Eta();
+    auto fillHist = [&](array<TProfile2D*,nPer> *hProf,  int fId, double w) {
         //cout << "Fill begin " << var1 << " "<< var2 <<" "<< var3 <<" "<<var4 << endl;
         //cout << "b"<<endl;
-        h.hProf[0][fId]->Fill(aeta, pTtag, var1, w);
-        h.hProf[1][fId]->Fill(aeta, pTtag, var2, w);
-        h.hProf[2][fId]->Fill(aeta, pTtag, var3, w);
-        h.hProf[3][fId]->Fill(aeta, pTtag, var4, w);
-        h.hProf[4][fId]->Fill(aeta, PUPPIprobe.Pt(), var3, w); //resambles the old way
-        h.hProf[5][fId]->Fill(aeta, CHSprobe.Pt(),   var3, w); 
-        h.hProf[6][fId]->Fill(aeta, avgProbe,        var3, w); 
-        h.hProf[7][fId]->Fill(abs(CHSprobe.Eta()), pTtag,   CHSprobe.Pt(), w); 
-
+        hProf[0][fId]->Fill(eta, pTtag, var1, w);
+        hProf[1][fId]->Fill(eta, pTtag, var2, w);
+        hProf[2][fId]->Fill(eta, pTtag, var3, w);
+        hProf[3][fId]->Fill(eta, pTtag, var4, w);
+        hProf[4][fId]->Fill(eta, PUPPIprobe.Pt(), var3, w); //resambles the old way
+        hProf[5][fId]->Fill(eta, CHSprobe.Pt(),   var3, w); 
+        hProf[6][fId]->Fill(eta, avgProbe,        var3, w); 
+        hProf[7][fId]->Fill(CHSprobe.Eta(), pTtag,   CHSprobe.Pt(), w); 
+    };
+    /*
+    fillHist(h.hProf,  fId, double w) {
         if(chsJets->size() >= 3) {
             double pM = (chsJets->at(0).p4.Pt() + chsJets->at(1).p4.Pt())/2;
             double p3 =  chsJets->at(2).p4.Pt();
             if(p3 / pM > 0.3) //skip alpha > 0.3
                 return;
         }
-        h.hProfBB[0][fId]->Fill(aeta, pTtag, var1, w);
-        h.hProfBB[1][fId]->Fill(aeta, pTtag, var2, w);
-        h.hProfBB[2][fId]->Fill(aeta, pTtag, var3, w);
-        h.hProfBB[3][fId]->Fill(aeta, pTtag, var4, w);
-        h.hProfBB[4][fId]->Fill(aeta, PUPPIprobe.Pt(), var3, w); //resambles the old way
-        h.hProfBB[5][fId]->Fill(aeta, CHSprobe.Pt(),   var3, w); 
-        h.hProfBB[6][fId]->Fill(aeta, avgProbe,        var3, w); 
-        h.hProfBB[7][fId]->Fill(abs(CHSprobe.Eta()), pTtag,   CHSprobe.Pt(), w); 
+        h.hProfBB[0][fId]->Fill(eta, pTtag, var1, w);
+        h.hProfBB[1][fId]->Fill(eta, pTtag, var2, w);
+        h.hProfBB[2][fId]->Fill(eta, pTtag, var3, w);
+        h.hProfBB[3][fId]->Fill(eta, pTtag, var4, w);
+        h.hProfBB[4][fId]->Fill(eta, PUPPIprobe.Pt(), var3, w); //resambles the old way
+        h.hProfBB[5][fId]->Fill(eta, CHSprobe.Pt(),   var3, w); 
+        h.hProfBB[6][fId]->Fill(eta, avgProbe,        var3, w); 
+        h.hProfBB[7][fId]->Fill(CHSprobe.Eta(), pTtag,   CHSprobe.Pt(), w); 
     };
+    */
 
-    fillHist(0, wgtTot);
-    fillHist(fileId, wgt);
+    fillHist(h.hProf, 0, wgtTot);
+    fillHist(h.hProf, fileId, wgt);
+
+    if(chsJets->size() >= 3) {
+        double pM = (chsJets->at(0).p4.Pt() + chsJets->at(1).p4.Pt())/2;
+        double p3 =  chsJets->at(2).p4.Pt();
+        if(p3 / pM > 0.3) //skip alpha > 0.3
+            return;
+    }
+
+    fillHist(h.hProfBB, 0, wgtTot);
+    fillHist(h.hProfBB, fileId, wgt);
 
 
 }
@@ -424,7 +447,7 @@ Bool_t matching::Process(Long64_t entry)
         //vector<string> dumy;
         //double corr = jetCorrsPUPPI.JEC_CHScorrections(pt, eta, area, *rho, dumy, CorFactorRes, Unc);
 
-        h.Fill3D(h.hRhopuppi, abs(eta), pt, *rho);
+        h.Fill3D(h.hRhopuppi, eta, pt, *rho);
     }
     //cout << "Init start " <<entry <<" "<< __LINE__ << endl;
     for (unsigned i = 0; i < chsJets->size(); ++i) {
@@ -436,10 +459,10 @@ Bool_t matching::Process(Long64_t entry)
         //vector<string> dumy;
         //double corr = jetCorrsCHS.JEC_CHScorrections(pt, eta, area, *rho, dumy, CorFactorRes, Unc);
 
-        h.Fill3D(h.hRhochs, abs(eta), pt, *rho);
+        h.Fill3D(h.hRhochs, eta, pt, *rho);
 
         if (pt >= jetSel) {
-            h.Fill2D(h.hEtaPtCHS, abs(eta), pt);
+            h.Fill2D(h.hEtaPtCHS, eta, pt);
         }
     }
     //cout << "Init start " <<entry <<" "<< __LINE__ << endl;
@@ -451,10 +474,10 @@ Bool_t matching::Process(Long64_t entry)
 
     for(unsigned i = 0; i < puppiJets->size(); ++i) {
         double pt   = puppiJets->at(i).p4.Pt();
-        double aEta = abs(puppiJets->at(i).p4.Eta());
+        double Eta = puppiJets->at(i).p4.Eta();
         if(pt < jetSel) continue;
 
-        h.Fill2D(h.hEtaPtPUPPI, aEta, pt);
+        h.Fill2D(h.hEtaPtPUPPI, Eta, pt);
 
         /*
            int m = -1;
@@ -482,20 +505,20 @@ Bool_t matching::Process(Long64_t entry)
         if(m != -1) {
             //cout << "match " << PUPPIjetPt[i] << " "<< PUPPIjetPt[i] / CHSjetPt[m] << endl;
             double r = puppiJets->at(i).p4.Pt() / chsJets->at(m).p4.Pt();
-            h.Fill3D(h.hBalEtaPt[0], aEta, pt, r);
+            h.Fill3D(h.hBalEtaPt[0], Eta, pt, r);
             if(*rho < 15)
-                h.Fill3D(h.hBalEtaPt[1], aEta, pt, r);
+                h.Fill3D(h.hBalEtaPt[1], Eta, pt, r);
             else if(*rho < 22)
-                h.Fill3D(h.hBalEtaPt[2], aEta, pt, r);
+                h.Fill3D(h.hBalEtaPt[2], Eta, pt, r);
             else if(*rho < 30)
-                h.Fill3D(h.hBalEtaPt[3], aEta, pt, r);
+                h.Fill3D(h.hBalEtaPt[3], Eta, pt, r);
             else
-                h.Fill3D(h.hBalEtaPt[4], aEta, pt, r);
+                h.Fill3D(h.hBalEtaPt[4], Eta, pt, r);
 
             //cout <<"Event " <<  PUPPIjetJEC[i] << " "<< CHSjetJEC[m] << endl;
         }
         else { //not matched
-            h.Fill2D(h.hEtaPtPUPPIalone, aEta, pt);
+            h.Fill2D(h.hEtaPtPUPPIalone, Eta, pt);
         }
     }
 
