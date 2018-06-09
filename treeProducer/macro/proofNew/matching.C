@@ -170,7 +170,7 @@ void matching::Histos::Init(TList *fOutput_)
         fOutput->Add(hJetPtInc[i]);
 
 
-        for(int k = 0; k < 9; ++k) {
+        for(int k = 0; k < 14; ++k) {
             hProf[k][i] = new TProfile2D(SF("hProf%d_%c",k+1, per), SF("hProf%d_%c",k+1, per), etaBins.size()-1, etaBins.data(),
                                                                           Ptbinning.size()-1, Ptbinning.data());
             fOutput->Add(hProf[k][i]);
@@ -261,7 +261,7 @@ void matching::DoMikkoMatching(int fileId)
     if(gRandom->Uniform() < 0.5) swap(CHStag, CHSprobe);
 
 
-    //if(abs(CHStag.Eta()) > 1.3) return;
+    if(abs(CHStag.Eta()) > 1.3) return;
 
     //Check trigger efficiency
 
@@ -285,8 +285,21 @@ void matching::DoMikkoMatching(int fileId)
         }
     }
     if(m == -1) return; //not found
-
     auto PUPPIprobe = puppiJets->at(m).p4;
+
+    m = -1;
+    for(int j = 0; j < (int)puppiJets->size(); ++j) {
+        double d2 = dist2(puppiJets->at(j).p4, CHStag);
+        if(d2 < 0.2*0.2) {
+            m = j;
+            break;
+        }
+    }
+    auto PUPPItag = PUPPIprobe;
+    if(m != -1) 
+        PUPPItag = puppiJets->at(m).p4;
+
+
 
 
     double var1 = PUPPIprobe.Pt() /  CHStag.Pt();
@@ -309,38 +322,34 @@ void matching::DoMikkoMatching(int fileId)
         hProf[5][fId]->Fill(eta, CHSprobe.Pt(),   var3, w); 
         hProf[6][fId]->Fill(eta, avgProbe,        var3, w); 
         hProf[7][fId]->Fill(CHSprobe.Eta(), pTtag,   CHSprobe.Pt(), w); 
-    };
-    /*
-    fillHist(h.hProf,  fId, double w) {
-        if(chsJets->size() >= 3) {
-            double pM = (chsJets->at(0).p4.Pt() + chsJets->at(1).p4.Pt())/2;
-            double p3 =  chsJets->at(2).p4.Pt();
-            if(p3 / pM > 0.3) //skip alpha > 0.3
-                return;
+
+        hProf[8][fId]->Fill(eta, PUPPIprobe.Pt(), CHSprobe.Pt(), w); //resambles the old way
+        hProf[9][fId]->Fill(eta, CHSprobe.Pt(),   PUPPIprobe.Pt(), w); 
+
+        if(m != -1) { //puppiTag exist
+            double pTtagP = PUPPItag.Pt(); 
+            hProf[10][fId]->Fill(eta, pTtagP, var3, w);
+            hProf[11][fId]->Fill(eta, pTtagP, var4, w);
+            hProf[12][fId]->Fill(CHSprobe.Eta(), pTtagP,   CHSprobe.Pt(), w); 
         }
-        h.hProfBB[0][fId]->Fill(eta, pTtag, var1, w);
-        h.hProfBB[1][fId]->Fill(eta, pTtag, var2, w);
-        h.hProfBB[2][fId]->Fill(eta, pTtag, var3, w);
-        h.hProfBB[3][fId]->Fill(eta, pTtag, var4, w);
-        h.hProfBB[4][fId]->Fill(eta, PUPPIprobe.Pt(), var3, w); //resambles the old way
-        h.hProfBB[5][fId]->Fill(eta, CHSprobe.Pt(),   var3, w); 
-        h.hProfBB[6][fId]->Fill(eta, avgProbe,        var3, w); 
-        h.hProfBB[7][fId]->Fill(CHSprobe.Eta(), pTtag,   CHSprobe.Pt(), w); 
+
     };
-    */
 
     fillHist(h.hProf, 0, wgtTot);
     fillHist(h.hProf, fileId, wgt);
 
+    bool isBB = true;
     if(chsJets->size() >= 3) {
         double pM = (chsJets->at(0).p4.Pt() + chsJets->at(1).p4.Pt())/2;
         double p3 =  chsJets->at(2).p4.Pt();
         if(p3 / pM > 0.3) //skip alpha > 0.3
-            return;
+            isBB = false;
     }
 
-    fillHist(h.hProfBB, 0, wgtTot);
-    fillHist(h.hProfBB, fileId, wgt);
+    if(isBB) {
+        fillHist(h.hProfBB, 0, wgtTot);
+        fillHist(h.hProfBB, fileId, wgt);
+    }
 
 
 }

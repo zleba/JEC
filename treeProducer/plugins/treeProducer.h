@@ -49,7 +49,7 @@
 #include "SimDataFormats/JetMatching/interface/JetFlavourInfo.h"//add
 #include "SimDataFormats/JetMatching/interface/JetFlavourInfoMatching.h"//add
 
-#include "JEC.h"
+//#include "JEC.h"
 #include "JEC/treeProducer/interface/QCDjet.h"
 
 
@@ -120,8 +120,8 @@ struct Parameters {
     bool isPrint_ ;
     bool saveWeights_;
     bool debug_ ;
-    string curFile_;
     string jetType_;
+    string curFile_;
 
     edm::EDGetTokenT<reco::JetFlavourInfoMatchingCollection> jetFlavourInfosToken_;
 
@@ -165,8 +165,8 @@ struct Parameters {
         debug_                = cfg.getUntrackedParameter<bool>("debug",false);
 
         //cout <<"RADEK listFile " <<  cfg.getParameter<edm::InputTag>("listFile") << endl;
-        curFile_      =           cfg.getParameter<string>("fileNames");
 
+        //curFile_      =           cfg.getParameter<string>("fileNames");
 
         jetFlavourInfosToken_ = iC.consumes<reco::JetFlavourInfoMatchingCollection>( cfg.getParameter<edm::InputTag>("jetFlavourInfos"));
     }
@@ -287,7 +287,7 @@ class treeProducer : public edm::EDAnalyzer
     edm::Handle<LHERunInfoProduct> runInfo;
 
     //JetCorrectionUncertainty *mPFUncCHS;
-    JECs jetEcorrsCHS, jetEcorrsPUPPI;
+    //JECs jetEcorrsCHS, jetEcorrsPUPPI;
 
     //fastjet                                                                                                                                                                   
     //fastjet::Filter* fTrimmer1;

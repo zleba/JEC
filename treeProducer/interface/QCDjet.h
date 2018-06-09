@@ -31,28 +31,6 @@ class QCDjet {
     bool tightID;
 
     QCDjet() {
-        /*
-        flavor      = 0;
-        flavorHadron= 0;
-        chf       = 0;
-        nhf       = 0;
-        phf       = 0;
-        elf       = 0;
-        muf       = 0;
-        chm         = 0;
-        nhm         = 0;
-        phm         = 0;
-        elm         = 0;
-        mum         = 0;
-        jetJECfact= 0;
-
-        isBtag= 0;
-        btag= 0;
-        area= 0;
-        unc= 0;
-        p4 = TLorentzVector();
-        tightID= 0;
-        */
     }
     virtual ~QCDjet(){}
 

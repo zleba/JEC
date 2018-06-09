@@ -40,7 +40,7 @@ struct PLOTTER {
     vector<TH2D *> hEtaPtPUPPI;
     vector<TH2D *> hEtaPtPUPPIalone;
 
-    vector<TProfile2D*> hProf[8], hProfBB[8];
+    vector<TProfile2D*> hProf[13], hProfBB[13];
 
     TF2 *f2;
     TH2D * hFit;
@@ -115,10 +115,12 @@ struct PLOTTER {
     void AsymmetryEtaPtTimeDep(int eta1, int eta2);
     void AsymmetryEtaPtPileUpDep(int eta1, int eta2);
 
-    void PlotProfiles(int type, int per);
+    void PlotProfiles(int type, int per, bool doSigma);
     void PlotProfilesOverlap();
-    void PlottMatchingCorr();
+    pair<TH1D*,TH1D*> PlottMatchingCorr(int direction, bool doFit = true);
 
+    void CompareSigmas();
+    void PlotVar1overVar2();
 
     vector<double> MeanAsym(int shift=0, TString style="");
     void JEC();
@@ -127,17 +129,22 @@ struct PLOTTER {
     void MatchingFactorsTimeDep(int rho=0);
     pair<TH1D*,TH1D*>  MatchingFactorsPileUpDep(bool plotFit, TString plotType = "time");
     void  PlotFit(TH1D *h84, TH1D *h1000);
+    void  PlotFitFour(TH1D *h84p, TH1D *h1000p, TH1D *h84n, TH1D *h1000n);
     void MatchingFactorsYbased(vector<double> res, bool allPer = true);
 
 };
 
 
-void PLOTTER::PlotProfiles(int type, int per)
+void PLOTTER::PlotProfiles(int type, int per, bool doSigma = false)
 {
+    if(type == 8 || type == 9)
+        doSigma = true;
+
+
     const int pMax = per > 0 ? 8  : 1;
     TCanvas *can = new TCanvas("can", "can", 800, 500);
 
-    if(type == 3 || type == 7)
+    if((type == 3 || type == 7) && !doSigma)
         SetLeftRight(0.28, 0.13);
     else
         SetLeftRight(0.08, 0.03);
@@ -147,38 +154,76 @@ void PLOTTER::PlotProfiles(int type, int per)
     gStyle->SetOptStat(0);
 
     for(int i = 1; i <= 7*6; ++i) {
+        int ii = 7*6 + i;
         can->cd(i);
         TProfile *prof[8], *profBB[8];
+        TProfile *Nprof[8], *NprofBB[8];
         for(int p = 0; p < pMax; ++p) {
-            prof[p]   = hProf[type][p]->ProfileY(SF("profName%d%d",type, rand()), i, i, "i");
-            profBB[p] = hProfBB[type][p]->ProfileY(SF("profNameBB%d%d",type, rand()), i, i, "i");
+            prof[p]   = hProf[type][p]->ProfileY(SF("profName%d%d",type, rand()), ii, ii, "i");
+            profBB[p] = hProfBB[type][p]->ProfileY(SF("profNameBB%d%d",type, rand()), ii, ii, "i");
+            int jj = 7*6 + 1 - i;
+            Nprof[p]   = hProf[type][p]->ProfileY(SF("profName%d%d",type, rand()), jj, jj, "i");
+            NprofBB[p] = hProfBB[type][p]->ProfileY(SF("profNameBB%d%d",type, rand()), jj, jj, "i");
         }
 
 
         prof[0]->SetLineColor(1);
-        prof[0]->Draw("e");
+        //prof[0]->Draw("hist e ][ ");
+        prof[0]->Draw("axis");
+
+
         for(int p = 1; p < pMax; ++p) {
             prof[p]->SetLineColor(p+1);
-            prof[p]->Draw("e same");
+            prof[p]->Draw("hist e same ][");
         }
-        prof[0]->Draw("e same");
-        profBB[0]->SetLineColor(kRed);
-        profBB[0]->SetMarkerColor(kRed);
-        profBB[0]->Draw("e same");
+        //prof[0]->Draw("hist e same  ][");
+
+        TH1D *myHist;
+        if(doSigma) {
+            profBB[0]->SetErrorOption("s");
+            myHist = new TH1D(SF("myHist%d",rand()), "", profBB[0]->GetNbinsX(), profBB[0]->GetXaxis()->GetXbins()->GetArray());
+            for(int k = 1; k <= profBB[0]->GetNbinsX(); ++k) {
+                double v = profBB[0]->GetBinContent(k);
+                double c = profBB[0]->GetBinCenter(k);
+                myHist->SetBinContent(k, (v - c)/c);
+                myHist->SetBinError(k, profBB[0]->GetBinError(k)/c);
+            }
+            
+            myHist->SetLineColor(kRed);
+            myHist->SetMarkerColor(kRed);
+            myHist->Draw("hist e same  ][");
+        }
+        else {
+            profBB[0]->SetLineColor(kRed);
+            profBB[0]->SetMarkerColor(kRed);
+            profBB[0]->Draw("hist e same  ][");
+
+            NprofBB[0]->SetLineColor(kBlack);
+            NprofBB[0]->SetLineWidth(1);
+            NprofBB[0]->Draw("hist e same  ][");
+        }
 
 
         GetXaxis()->SetRangeUser(74, 2000);
-        if(type == 3 || type == 7) {
+
+        if(doSigma) {
+            GetYaxis()->SetRangeUser(-0.15, 0.15);
+            if(type == 3 || type == 7)
+                GetYaxis()->SetRangeUser(-0.30, 0.30);
+
+            gPad->SetLogy(0);
+        }
+        else if(type == 3 || type == 7) {
             GetYaxis()->SetRangeUser(74, 2000);
             gPad->SetLogy();
         }
         else {
-            if(type == 2)
+            if(type == 2 || type == 10)
                 GetYaxis()->SetRangeUser(0.91, 1.09);
             else if(type == 4 || type == 5 || type == 6)
                 GetYaxis()->SetRangeUser(0.951, 1.09);
             else
-                GetYaxis()->SetRangeUser(0.21, 1.15);
+                GetYaxis()->SetRangeUser(0.21, 1.25);
             gPad->SetLogy(0);
 
         }
@@ -192,18 +237,29 @@ void PLOTTER::PlotProfiles(int type, int per)
         SetFTO({12}, {5.1}, {1.63, 3.0, 0.3, 4.4});
         GetFrame()->SetTitle("");
 
-        double l = hProf[type][0]->GetXaxis()->GetBinLowEdge(i);
-        double u = hProf[type][0]->GetXaxis()->GetBinUpEdge(i);
+        double l = hProf[type][0]->GetXaxis()->GetBinLowEdge(ii);
+        double u = hProf[type][0]->GetXaxis()->GetBinUpEdge(ii);
         DrawLatexUp(-1, SF("%1.2f < |#eta| < %1.2f", l, u), (type == 3||type ==7) ? 8 : -1);
 
         if(i == 1) {
             //GetYaxis()->SetTitle("#LT p_{T}^{PUPPI}#GT/#LT p_{T}^{CHS}#GT");
-            if(type == 3)      DrawLatexLeft(4.4, "#LT p_{T}^{PUPPI} (probe) #GT [GeV]", -1, "t>");
-            else if(type == 7) DrawLatexLeft(4.4, "#LT p_{T}^{CHS} (probe) #GT [GeV]", -1, "t>");
-            else if(type == 0) DrawLatexLeft(4.4, "#LT p_{T}^{PUPPI} (probe) / p_{T}^{CHS} (tag) #GT", -1, "t>");
-            else if(type == 1) DrawLatexLeft(4.4, "#LT p_{T}^{CHS} (probe) / p_{T}^{CHS} (tag) #GT", -1, "t>");
-            else if(type == 2 || type == 4 || type == 5 || type == 6)
-                               DrawLatexLeft(4.4, "#LT p_{T}^{PUPPI} (probe) / p_{T}^{CHS} (probe) #GT", -1, "t>");
+
+            if(doSigma) {
+                if(type == 3) DrawLatexLeft(4.4, "(p_{T}^{PUPPI}(probe) - p_{T}^{CHS})/ p_{T}^{CHS}", -1, "t>");
+                else if(type == 7) DrawLatexLeft(4.4, "(p_{T}^{CHS}(probe) - p_{T}^{CHS})/ p_{T}^{CHS}", -1, "t>");
+
+                else if(type == 8) DrawLatexLeft(4.4, "(p_{T}^{CHS} - #bar{p}_{T}^{PUPPI})/ #bar{p}_{T}^{PUPPI}", -1, "t>");
+                else if(type == 9) DrawLatexLeft(4.4, "(p_{T}^{PUPPI} - #bar{p}_{T}^{CHS})/ #bar{p}_{T}^{CHS}", -1, "t>");
+
+            }
+            else {
+                if(type == 3)      DrawLatexLeft(4.4, "#LT p_{T}^{PUPPI} (probe) #GT [GeV]", -1, "t>");
+                else if(type == 7) DrawLatexLeft(4.4, "#LT p_{T}^{CHS} (probe) #GT [GeV]", -1, "t>");
+                else if(type == 0) DrawLatexLeft(4.4, "#LT p_{T}^{PUPPI} (probe) / p_{T}^{CHS} (tag) #GT", -1, "t>");
+                else if(type == 1) DrawLatexLeft(4.4, "#LT p_{T}^{CHS} (probe) / p_{T}^{CHS} (tag) #GT", -1, "t>");
+                else if(type == 2 || type == 4 || type == 5 || type == 6 || type == 10)
+                                   DrawLatexLeft(4.4, "#LT p_{T}^{PUPPI} (probe) / p_{T}^{CHS} (probe) #GT", -1, "t>");
+            }
         }
         if(i == 42) {
             //GetXaxis()->SetTitle("p_{Ttag}^{CHS} [GeV]");
@@ -213,17 +269,28 @@ void PLOTTER::PlotProfiles(int type, int per)
                 DrawLatexDown(3.0, "p_{T}^{CHS} (probe) [GeV]", -1, "r");
             else if(type == 6)
                 DrawLatexDown(3.0, "#sqrt{p_{T}^{CHS} p_{T}^{PUPPI}} (probe) [GeV]", -1, "r");
+
+            else if(type == 8) DrawLatexDown(3.0, "p_{T}^{PUPPI} [GeV]", -1, "r");
+            else if(type == 9) DrawLatexDown(3.0, "p_{T}^{CHS} [GeV]", -1, "r");
+            else if(type == 10) DrawLatexDown(3.0, "p_{T}^{PUPPI} (tag) [GeV]", -1, "r");
+
             else
                 DrawLatexDown(3.0, "p_{T}^{CHS} (tag) [GeV]", -1, "r");
 
         }
 
         if( (i == 41 && (type == 3 || type == 7)) || (i == 42 && (type != 3  && type != 7))) {
-            TLegend *leg = new TLegend(0.2, 0.55, 0.65, 0.85);
+            TLegend *leg = new TLegend(0.1, 0.55, 0.55, 0.85);
             leg->SetBorderSize(0);
             leg->SetTextSize(0.8*GetXaxis()->GetTitleSize());
-            leg->AddEntry(prof[0], "any #alpha", "ple");
-            leg->AddEntry(profBB[0], "#alpha < 0.3", "ple");
+            //leg->AddEntry(prof[0], "any #alpha", "ple");
+            if(doSigma) {
+                leg->AddEntry(myHist, "#alpha < 0.3 (#eta > 0)", "ple");
+            }
+            else {
+                leg->AddEntry(profBB[0], "#alpha < 0.3 (#eta > 0)", "ple");
+                leg->AddEntry(NprofBB[0], "#alpha < 0.3 (#eta < 0)", "ple");
+            }
             leg->Draw();
         }
 
@@ -235,6 +302,235 @@ void PLOTTER::PlotProfiles(int type, int per)
     can->Clear();
     delete can;
 }
+
+void PLOTTER::CompareSigmas()
+{
+    bool doSigma = true;
+
+    TCanvas *can = new TCanvas("can", "can", 800, 500);
+
+    SetLeftRight(0.08, 0.03);
+
+    DividePad(vector<double>(7,1.), vector<double>(6,1.));
+
+    gStyle->SetOptStat(0);
+
+    for(int i = 1; i <= 7*6; ++i) {
+        int ii = 7*6 + i;
+        can->cd(i);
+        TProfile *profBB3;
+        TProfile  *NprofBB3;
+        TProfile *profBB7;
+        TProfile  *NprofBB7;
+
+        int jj = 7*6 + 1 - i;
+        int type = 3;
+        profBB3 = hProfBB[type][0]->ProfileY(SF("profNameBB%d%d",type, rand()), ii, ii, "i");
+        NprofBB3 = hProfBB[type][0]->ProfileY(SF("profNameBB%d%d",type, rand()), jj, jj, "i");
+        type = 7;
+        profBB7 = hProfBB[type][0]->ProfileY(SF("profNameBB%d%d",type, rand()), ii, ii, "i");
+        NprofBB7 = hProfBB[type][0]->ProfileY(SF("profNameBB%d%d",type, rand()), jj, jj, "i");
+
+
+        profBB3->SetLineColor(1);
+        //prof[0]->Draw("hist e ][ ");
+        profBB3->Draw("axis");
+
+
+        TH1D *myHist;
+        if(doSigma) {
+            profBB3->SetErrorOption("s");
+            profBB7->SetErrorOption("s");
+            myHist = new TH1D(SF("myHist%d",rand()), "", profBB3->GetNbinsX(), profBB3->GetXaxis()->GetXbins()->GetArray());
+            for(int k = 1; k <= profBB3->GetNbinsX(); ++k) {
+                double v3 = profBB3->GetBinContent(k);
+                double c3 = profBB3->GetBinCenter(k);
+                double r =  profBB7->GetBinError(k) !=  0  ?  profBB3->GetBinError(k) /  profBB7->GetBinError(k)  : 0;
+                myHist->SetBinContent(k, r );
+                //cout << "HELENKA " << k <<" "<< r << endl;
+            }
+            
+            myHist->SetLineColor(kRed);
+            myHist->SetMarkerColor(kRed);
+            myHist->Draw("hist e same  ][");
+        }
+
+
+        GetXaxis()->SetRangeUser(74, 2000);
+
+        GetYaxis()->SetRangeUser(0.94, 1.16);
+        gPad->SetLogy(0);
+
+        GetYaxis()->SetNdivisions(505);
+        //GetXaxis()->SetMoreLogLabels();
+        //GetYaxis()->SetMoreLogLabels();
+        gPad->SetLogx();
+
+
+        SetFTO({12}, {5.1}, {1.63, 3.0, 0.3, 4.4});
+        GetFrame()->SetTitle("");
+
+        double l = hProf[type][0]->GetXaxis()->GetBinLowEdge(ii);
+        double u = hProf[type][0]->GetXaxis()->GetBinUpEdge(ii);
+        DrawLatexUp(-1, SF("%1.2f < |#eta| < %1.2f", l, u),  -1);
+
+        if(i == 1) {
+            //GetYaxis()->SetTitle("#LT p_{T}^{PUPPI}#GT/#LT p_{T}^{CHS}#GT");
+            DrawLatexLeft(4.4, "#sigma^{PUPPI+x}/ #sigma^{CHS+x}", -1, "t>");
+        }
+
+        if(i == 42) {
+            DrawLatexDown(3.0, "p_{T}^{CHS} (tag) [GeV]", -1, "r");
+
+        }
+
+
+        if(i == 42) {
+            TLegend *leg = new TLegend(0.1, 0.55, 0.55, 0.85);
+            leg->SetBorderSize(0);
+            leg->SetTextSize(0.8*GetXaxis()->GetTitleSize());
+            //leg->AddEntry(prof[0], "any #alpha", "ple");
+            leg->AddEntry(myHist, "#alpha < 0.3 (pos #eta)", "ple");
+            leg->Draw();
+        }
+
+
+
+    }
+
+    can->Print(outName);
+    //can->Print(outName);
+    can->Clear();
+    delete can;
+}
+
+void PLOTTER::PlotVar1overVar2()
+{
+    TCanvas *can = new TCanvas("can", "can", 800, 500);
+
+    SetLeftRight(0.08, 0.03);
+
+    DividePad(vector<double>(7,1.), vector<double>(6,1.));
+
+    gStyle->SetOptStat(0);
+
+    for(int i = 1; i <= 7*6; ++i) {
+        int ii = 7*6 + i;
+        can->cd(i);
+        TProfile *profBB1;
+        TProfile  *NprofBB1;
+        TProfile *profBB2;
+        TProfile  *NprofBB2;
+
+        int jj = 7*6 + 1 - i;
+        int type = 0;
+        profBB1 = hProfBB[type][0]->ProfileY(SF("profNameBB%d%d",type, rand()), ii, ii, "i");
+        NprofBB1 = hProfBB[type][0]->ProfileY(SF("profNameBB%d%d",type, rand()), jj, jj, "i");
+        type = 1;
+        profBB2 = hProfBB[type][0]->ProfileY(SF("profNameBB%d%d",type, rand()), ii, ii, "i");
+        NprofBB2 = hProfBB[type][0]->ProfileY(SF("profNameBB%d%d",type, rand()), jj, jj, "i");
+
+
+        profBB1->SetLineColor(1);
+        //prof[0]->Draw("hist e ][ ");
+        profBB1->Draw("axis");
+
+
+        //TH1D *profP = dynamic_cast<TH1D*>(profBB1->Clone(SF("%d", rand())));
+        //TH1D *profN = dynamic_cast<TH1D*>(NprofBB1->Clone(SF("%d",rand())));
+
+        TH1D *profP = new TH1D(SF("myHistP%d",rand()), "", profBB1->GetNbinsX(), profBB1->GetXaxis()->GetXbins()->GetArray());
+        TH1D *profN = new TH1D(SF("myHistN%d",rand()), "", profBB1->GetNbinsX(), profBB1->GetXaxis()->GetXbins()->GetArray());
+
+
+        for(int k = 1; k < profP->GetNbinsX(); ++k) {
+            double rP = profBB2->GetBinContent(k) != 0 ?  profBB1->GetBinContent(k) /  profBB2->GetBinContent(k) : 0;
+            double rN = NprofBB2->GetBinContent(k) != 0 ?  NprofBB1->GetBinContent(k) /  NprofBB2->GetBinContent(k) : 0;
+            cout << "RADECEK " << rP << endl;
+            profP->SetBinContent(k, rP);
+            profP->SetBinError(k, 0);
+            profN->SetBinContent(k, rN);
+            profN->SetBinError(k, 0);
+        }
+
+        profP->SetLineColor(kRed);
+        profP->SetMarkerColor(kRed);
+        profP->Draw("hist e same  ][");
+
+        profN->SetLineColor(kBlack);
+        profN->SetMarkerColor(kBlack);
+        profN->Draw("hist e same  ][");
+
+        GetXaxis()->SetRangeUser(74, 2000);
+
+        //GetYaxis()->SetRangeUser(0.94, 1.16);
+        GetYaxis()->SetRangeUser(0.91, 1.09);
+        gPad->SetLogy(0);
+
+        GetYaxis()->SetNdivisions(505);
+        //GetXaxis()->SetMoreLogLabels();
+        //GetYaxis()->SetMoreLogLabels();
+        gPad->SetLogx();
+
+
+        SetFTO({12}, {5.1}, {1.63, 3.0, 0.3, 4.4});
+        GetFrame()->SetTitle("");
+
+        double l = hProf[type][0]->GetXaxis()->GetBinLowEdge(ii);
+        double u = hProf[type][0]->GetXaxis()->GetBinUpEdge(ii);
+        DrawLatexUp(-1, SF("%1.2f < |#eta| < %1.2f", l, u),  -1);
+
+
+        if(i == 1) {
+            //GetYaxis()->SetTitle("#LT p_{T}^{PUPPI}#GT/#LT p_{T}^{CHS}#GT");
+            DrawLatexLeft(4.4, "#LT p_{T}^{PUPPI} (probe) / p_{T}^{CHS} (tag) #GT  /  #LT p_{T}^{CHS} (probe) / p_{T}^{CHS} (tag) #GT", -1, "t>");
+
+                //else if(type == 0) DrawLatexLeft(4.4, "#LT p_{T}^{PUPPI} (probe) / p_{T}^{CHS} (tag) #GT", -1, "t>");
+                //else if(type == 1) DrawLatexLeft(4.4, "#LT p_{T}^{CHS} (probe) / p_{T}^{CHS} (tag) #GT", -1, "t>");
+
+        }
+
+        if(i == 42) {
+            DrawLatexDown(3.0, "p_{T}^{CHS} (tag) [GeV]", -1, "r");
+        }
+
+
+        if(i == 42) {
+            TLegend *leg = new TLegend(0.1, 0.55, 0.55, 0.85);
+            leg->SetBorderSize(0);
+            leg->SetTextSize(0.8*GetXaxis()->GetTitleSize());
+            //leg->AddEntry(prof[0], "any #alpha", "ple");
+            leg->AddEntry(profP, "#alpha < 0.3 (#eta > 0)", "ple");
+            leg->AddEntry(profN, "#alpha < 0.3 (#eta < 0)", "ple");
+            leg->Draw();
+        }
+        //*/
+
+
+
+    }
+
+    can->Print(outName);
+    //can->Print(outName);
+    can->Clear();
+    delete can;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 void PLOTTER::PlotProfilesOverlap()
 {
@@ -333,38 +629,76 @@ pair<TGraphErrors*, TGraphErrors*> GetMikkoCorr(vector<TProfile2D*> *hProf, int 
 
 }
 
+void CleanGraph(TGraphErrors *gr)
+{
+    double xOrg = -30000;
+    int iLast = 1000;
+    for(int i = 0; i < gr->GetN(); ++i) {
+        double x, y;
+        gr->GetPoint(i, x, y);
+        if(x < xOrg) {
+            iLast = i;
+            break;
+        }
+        xOrg = x;
+    }
+    iLast = max(0, iLast);
+    //cout << "Old Npoints " << gr->GetN() << endl;
 
+    for(int i = gr->GetN()-1; i >= iLast; --i) {
+        //cout << "Cleaning " << i << endl;
+        gr->RemovePoint(i);
+    }
+    //cout << "New Npoints " << gr->GetN() << endl;
+}
 
-
-
-void PLOTTER::PlottMatchingCorr()
+pair<TH1D*,TH1D*> PLOTTER::PlottMatchingCorr(int direction, bool doFit = true)
 {
     TCanvas *can = new TCanvas("can", "can", 800, 500);
     SetLeftRight(0.08, 0.03);
 
     DividePad(vector<double>(7,1.), vector<double>(6,1.));
 
+
+    TH1D *hFit84 = nullptr, *hFit1000 = nullptr;
+    if(doFit) {
+        const double *ar = hBalEtaPtAll[0][0]->GetXaxis()->GetXbins()->GetArray();
+        vector<double> arr;
+        for(int k = 0; k <= hBalEtaPtAll[0][0]->GetNbinsX(); ++k)
+            if(ar[k] >= -0.00001) arr.push_back(ar[k]);
+
+        hFit84   =  new TH1D("hFit84", "fit84",  arr.size()-1, arr.data());
+        hFit1000 =  new TH1D("hFit1000", "fit1000",  arr.size()-1, arr.data());
+    }
+
+
+
     gStyle->SetOptStat(0);
 
     for(int i = 1; i <= 7*6; ++i) {
+        int ii = 7*6+i;
+        if(direction == -1)
+            ii = 7*6+1-i;
+
         can->cd(i);
 
         TGraphErrors *gr1, *gr2;
-        tie(gr1, gr2) = GetMikkoCorr(hProf, i);
+        tie(gr1, gr2) = GetMikkoCorr(hProf, ii);
         TGraphErrors *gr1BB, *gr2BB;
-        tie(gr1BB, gr2BB) = GetMikkoCorr(hProfBB, i);
+        tie(gr1BB, gr2BB) = GetMikkoCorr(hProfBB, ii);
 
-        hBalEtaPtAll[0][0]->GetXaxis()->SetRange(i,i);
+        hBalEtaPtAll[0][0]->GetXaxis()->SetRange(ii,ii);
         TH2D *hTemp = dynamic_cast<TH2D*>(hBalEtaPtAll[0][0]->Project3D(SF("%d_yz",rand()))); 
         assert(hTemp);
         TProfile *profOrg = hTemp->ProfileY();
 
         profOrg->Draw("hist");
 
-        gr1->Draw("pe");
-        gr1BB->SetLineColor(kRed);
-        gr1BB->SetMarkerColor(kRed);
-        gr1BB->Draw("pe");
+        CleanGraph(gr1BB);
+        //gr1->Draw("pe");
+        gr1BB->SetLineColor(kBlack);
+        gr1BB->SetMarkerColor(kBlack);
+        gr1BB->Draw("pe same");
 
         GetXaxis()->SetRangeUser(74, 2000);
         //GetXaxis()->SetMoreLogLabels();
@@ -386,7 +720,7 @@ void PLOTTER::PlottMatchingCorr()
 
             TLegend *leg = new TLegend(0.1, 0.5, 0.65, 0.85);
             leg->SetBorderSize(0);
-            leg->AddEntry(gr1, "any #alpha", "lpe");
+            //leg->AddEntry(gr1, "any #alpha", "lpe");
             leg->AddEntry(gr1BB, "#alpha < 0.3", "lpe");
             leg->AddEntry(profOrg, "Old Method", "l");
             leg->Draw();
@@ -394,9 +728,77 @@ void PLOTTER::PlottMatchingCorr()
 
 
 
-        double l = hBalEtaPtAll[0][0]->GetXaxis()->GetBinLowEdge(i);
-        double u = hBalEtaPtAll[0][0]->GetXaxis()->GetBinUpEdge(i);
-        DrawLatexUp(-1, SF("%1.2f < |#eta| < %1.2f", l, u));
+        double l = hBalEtaPtAll[0][0]->GetXaxis()->GetBinLowEdge(ii);
+        double u = hBalEtaPtAll[0][0]->GetXaxis()->GetBinUpEdge(ii);
+        double c = hBalEtaPtAll[0][0]->GetXaxis()->GetBinCenter(ii);
+
+
+        /////////////////////////////////////////////////////////////
+        double y = hBalEtaPtAll[0][0]->GetXaxis()->GetBinCenter(ii);
+        cout << "my y " << y << endl;
+        TF1 *fun = new TF1(SF("fun%d",rand()), "[0] + [1]*log(x/84)", 84, 2000);
+        fun->SetParameter(0, 1);
+        fun->SetParameter(1, 0);
+        if(doFit) {
+            double maxPt = 0;
+            for(int i = 0; i <= gr1BB->GetN(); ++i) {
+                double x, y;
+                gr1BB->GetPoint(i, x, y);
+                maxPt = max(maxPt, x);
+            }
+            double maxPtNow = std::min(500.0, maxPt);
+
+            gr1BB->Fit(fun, "", "", 84, maxPtNow);
+            fun->DrawF1(84, maxPtNow, "l same");
+            TF1 *fun2 = (TF1*) fun->Clone(SF("fun2_%d",i));
+            fun2->SetLineColor(kGreen);
+            if(maxPt > maxPtNow)
+                fun2->DrawF1(maxPtNow, maxPt,  "l same");
+
+
+
+            double yMin = hBalEtaPtAll[0][0]->GetXaxis()->GetBinLowEdge(ii);
+            double yMax = hBalEtaPtAll[0][0]->GetXaxis()->GetBinUpEdge(ii);
+            cout << "Radek "<<  yMin << " " << yMax <<
+                    " 84 "<< maxPt<<" 84 "<< maxPtNow<<" "<< /*round(6500/cosh(yMin))<<" "<<*/ round(100000*fun->GetParameter(0))/100000. <<" "<< round(100000*fun->GetParameter(1))/100000. << endl;
+
+
+            double p0 = fun->GetParameter(0);
+            double p1 = fun->GetParameter(1);
+            double p0err = fun->GetParError(0);
+            double p1err = fun->GetParError(1);
+
+            double s84=0, ss84=0;
+            double s1000=0, ss1000=0;
+            int N = 10000;
+            for(int k = 0; k < N; ++k) {
+                double p0n = p0 + gRandom->Gaus(p0, p0err);
+                double p1n = p1 + gRandom->Gaus(p1, p1err);
+                fun->SetParameters(p0n, p1n);
+                s84  += fun->Eval(84);
+                ss84 += pow(fun->Eval(84),2);
+                s1000  += fun->Eval(1000);
+                ss1000 += pow(fun->Eval(1000),2);
+            }
+            fun->SetParameters(p0, p1);
+
+            //cout << "HEL84 " << ss84/ << 
+            double e84   = sqrt(ss84/N - pow(s84/N,2));
+            double e1000 = sqrt(ss1000/N - pow(s1000/N,2));
+            cout <<"HELAX "<< e84 <<" "<< e1000 << endl;
+
+            int iBin = hFit84->FindBin(abs(c));
+            if(maxPtNow > 84 && abs(c) < 4.4) {
+                hFit84->SetBinContent(iBin, fun->Eval(84));
+                hFit84->SetBinError(iBin, e84);
+                hFit1000->SetBinContent(iBin, fun->Eval(1000));
+                hFit1000->SetBinError(iBin, e1000);
+            }
+
+        }
+
+
+        DrawLatexUp(-1, SF("%1.2f < #eta < %1.2f", l, u));
 
 
 
@@ -406,15 +808,7 @@ void PLOTTER::PlottMatchingCorr()
     //can->Print(outName);
     can->Clear();
     delete can;
-
-
-
-
-
-
-
-
-
+    return make_pair(hFit84, hFit1000);
 }
 
 void  PLOTTER::PlotFit(TH1D *h84, TH1D *h1000)
@@ -443,6 +837,9 @@ void  PLOTTER::PlotFit(TH1D *h84, TH1D *h1000)
     leg->AddEntry(h1000, "p_{T}^{PUPPI} = 1000 GeV", "l");
     leg->Draw();
 
+
+
+
     DrawLatexUp(1, "2016 RunB-H (13 TeV)", -1, "vr" );
 
     can->Print(outName);
@@ -450,6 +847,73 @@ void  PLOTTER::PlotFit(TH1D *h84, TH1D *h1000)
     can->Clear();
     delete can;
 }
+
+void  PLOTTER::PlotFitFour(TH1D *h84p, TH1D *h1000p, TH1D *h84n, TH1D *h1000n)
+{
+    TCanvas *can = new TCanvas("can", "can", 500, 500);
+    SetLeftRight(0.15, 0.15);
+
+    h84p->SetLineColor(kRed);
+    h84p->Draw("hist  e ][");
+    h84p->Draw("hist   ][ same");
+    h1000p->SetLineColor(kRed);
+    h1000p->SetLineStyle(2);
+    h1000p->Draw("hist e ][ same");
+    h1000p->Draw("hist   ][ same");
+
+    h84n->SetLineColor(kBlack);
+    h84n->Draw("hist e ][ same");
+    h84n->Draw("hist   ][ same");
+    h1000n->SetLineColor(kBlack);
+    h1000n->SetLineStyle(2);
+    h1000n->Draw("hist e ][ same");
+    h1000n->Draw("hist   ][ same");
+
+
+    GetYaxis()->SetRangeUser(0.92, 1.08);
+    GetXaxis()->SetRangeUser(0.0, 4.35);
+    GetYaxis()->SetTitle("p_{T}^{PUPPI}/p_{T}^{CHS} Correction");
+    GetXaxis()->SetTitle("|#eta|");
+    GetFrame()->SetTitle("");
+
+    TLegend *leg = new TLegend(0.2, 0.15, 0.5, 0.4);
+    leg->SetBorderSize(0);
+    leg->SetTextSize(GetXaxis()->GetTitleSize());
+    leg->AddEntry((TObject*)nullptr, "The PUPPI/CHS", "h");
+    leg->AddEntry((TObject*)nullptr, "matching corrections", "h");
+    leg->AddEntry((TObject*)nullptr, "(logLin fit)", "h");
+    //leg->AddEntry(h84p, "p_{T}^{PUPPI} = 84 GeV", "l");
+    //leg->AddEntry(h1000p, "p_{T}^{PUPPI} = 1000 GeV", "l");
+    leg->Draw();
+
+
+    TLegend *leg2 = new TLegend(0.2, 0.65, 0.7, 0.8);
+    leg2->SetBorderSize(0);
+    leg2->SetTextSize(0.7*GetXaxis()->GetTitleSize());
+    leg2->SetNColumns(2);
+    leg2->AddEntry((TObject*)nullptr, "pos", "");
+    leg2->AddEntry((TObject*)nullptr, "neg", "");
+
+    leg2->AddEntry(h84p, "p_{T}^{PUPPI} = 84 GeV", "l");
+    leg2->AddEntry(h84n, "p_{T}^{PUPPI} = 84 GeV", "l");
+    leg2->AddEntry(h1000p, "p_{T}^{PUPPI} = 1000 GeV", "l");
+    leg2->AddEntry(h1000n, "p_{T}^{PUPPI} = 1000 GeV", "l");
+    leg2->Draw();
+
+
+
+    DrawLatexUp(1, "2016 RunB-H (13 TeV)", -1, "vr" );
+
+    can->Print(outName);
+    //can->Print(outName);
+    can->Clear();
+    delete can;
+}
+
+
+
+
+
 
 
 pair<TPad*, TPad*> TitleSpace(int perID)
@@ -1834,6 +2298,7 @@ vector<double> PLOTTER::MeanAsym(int shift, TString style)
 void plotter()
 {
 
+    TH1::SetDefaultSumw2();
 
 
     PLOTTER plot;
@@ -1849,12 +2314,12 @@ void plotter()
     //plot.Init("histos/V7V7newBinning.root", myOut+"(");
 
     //TString nTag = "profilesCentralBB";
-    TString nTag = "profilesCentral";
+    TString nTag = "newAsym";
 
 
     TString myOut = "plots/"+nTag+".pdf";
     //plot.Init("histos/V11V11newBinning.root", myOut+"(");
-    plot.Init("histos/"+nTag+".root", myOut+"");
+    plot.Init("histos/"+nTag+".root", myOut+"(");
 
 
     //plot.Init("histos/Summer16_07Aug2017V5__Summer16_07Aug2017V5noResNew.root", myOut+"(");
@@ -1882,8 +2347,8 @@ void plotter()
     return;
     */
     gStyle->SetOptStat(0);
-    plot.PlotProfilesOverlap();
-    return;
+    //plot.PlotProfilesOverlap();
+    //return;
 
     plot.perID = 0;
     //plot.Unmatched();
@@ -1894,10 +2359,25 @@ void plotter()
     plot.PlotProfiles(3, -1);
     plot.PlotProfiles(7, -1);
 
-    plot.PlottMatchingCorr();
+    plot.PlottMatchingCorr(+1, false);
+    plot.PlottMatchingCorr(-1, false);
+    TH1D *h1P, *h2P, *h1N, *h2N;
+    tie(h1P, h2P) = plot.PlottMatchingCorr(+1, true);
+    tie(h1N, h2N) = plot.PlottMatchingCorr(-1, true);
+    //plot.PlotFit(h1P, h2P);
+    plot.PlotFitFour(h1P, h2P, h1N, h2N);
+
     plot.PlotProfiles(5, -1);
     plot.PlotProfiles(6, -1);
+    plot.PlotProfiles(8, -1);
+    plot.PlotProfiles(9, -1);
+    //plot.PlotProfiles(3, -1, true);
+    //plot.PlotProfiles(7, -1, true);
+    plot.PlotVar1overVar2();
 
+    plot.CompareSigmas();
+
+    plot.PlotProfiles(10, -1);
 
     plot.outName = myOut + ")";
     plot.PlotProfiles(4, -1);

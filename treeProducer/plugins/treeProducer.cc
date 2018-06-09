@@ -55,7 +55,7 @@ vector<float> getArray(vector<QCDjet> &jets)
 }
 */
 
-vector<QCDjet> FillJets (JECs &jetEcorrs, edm::Handle<pat::JetCollection> &jets, double rho)
+vector<QCDjet> FillJets (edm::Handle<pat::JetCollection> &jets)
 {
   vector<QCDjet> jetVec;
   for(pat::JetCollection::const_iterator ijet =jets->begin();ijet != jets->end(); ++ijet) {
@@ -64,21 +64,11 @@ vector<QCDjet> FillJets (JECs &jetEcorrs, edm::Handle<pat::JetCollection> &jets,
       QCDjet jetNow;
       jetNow = GetJet(*ijet);
 
-      vector<string> dumy;
-      double L2L3res, Unc;
-      //cout << "PT before " << ijet->pt() << endl;
-      //cout << "Rho is " << *rho <<" "<<  pvRho_  <<  endl;
-      jetNow.jetJECtot = 
-           jetEcorrs.JEC_CHScorrections(ijet->correctedP4("Uncorrected").pt(), ijet->eta(), ijet->jetArea(),  rho, dumy, L2L3res, Unc);
-      jetNow.jetJECl2l3Res = L2L3res;
-      //cout << "PT after " << jet.Pt() << endl;
-      //jetNow.p4 =  ROOT::Math::PtEtaPhiM4D<float>(newPt, ijet->eta(), ijet->phi(), ijet->mass()); 
 
       jetNow.btag = ijet->bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags"/*  p.srcBtag_.c_str()*/);
 
       //mPFUncCHS.setJetEta(ijet->eta());
       //mPFUncCHS.setJetPt(jet.Pt()); // here you must use the CORRECTED jet pt
-      jetNow.unc = Unc;
       //cout << "Jet unc is " << jet.Pt()<<" "<< Unc << endl;
       //jetNow.jetJECfact = CorFactorL2L3res;
 
@@ -115,41 +105,6 @@ void treeProducer::beginJob()
   cutFlowHisto_->SetCanExtend(TH1::kAllAxes);
 
 
-  //Init of JEC
-
-  char period = 'P';
-  if(!p.isMC_) {
-      const string sPatern = "data/Run2016";
-      cout << "RADEK " << p.curFile_ << endl;
-      size_t place = p.curFile_.find(sPatern);
-      assert(place != string::npos);
-      cout << p.curFile_ << endl;
-      period = p.curFile_[place + sPatern.size()];
-      cout << "period is " << period << endl;
-  }
-
-
-
-  string jecTag = "Summer16_07Aug2017";
-  int version = 7;
-  //string jecTag = "Spring16_25ns";
-  //int version = 6;
-
-
-  string jetType = "AK4PFchs";
-  if(p.jetType_.find("Puppi") != string::npos) {
-      jetType = "AK4PFPuppi";
-      //cout << "Puppi found" << endl;
-      //exit(0);
-  }
-
-  vector<string> dumy;
-
-  cout << "Jet type is :"  << p.isMC_ <<" "<< jetType << endl;
-  jetEcorrsCHS.Init(p.isMC_, jecTag, period, version, "AK4PFchs", "", dumy);
-  jetEcorrsPUPPI.Init(p.isMC_, jecTag, period, version, "AK4PFPuppi", "", dumy);
-  //exit(0);
- 
   //--- book the tree ----------------------------------
   outTree_ = fs_->make<TTree>("events","events");
   outTree_->Branch("runNo"                ,&run_               ,"runNo/I");
@@ -439,9 +394,9 @@ void treeProducer::analyze(edm::Event const& iEvent, edm::EventSetup const& iSet
 
 
 
-  vector<QCDjet> jetVecCHS = FillJets(jetEcorrsCHS, jetsCHS, *rho);
+  vector<QCDjet> jetVecCHS = FillJets(jetsCHS);
   chsJets_ = &jetVecCHS;
-  vector<QCDjet> jetVecPUPPI = FillJets(jetEcorrsPUPPI, jetsPUPPI, *rho);
+  vector<QCDjet> jetVecPUPPI = FillJets(jetsPUPPI);
   puppiJets_ = &jetVecPUPPI;
 
 
