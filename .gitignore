@@ -1,2 +1,12 @@
 *~
 treeProducer/python/__init*
+*.so
+*.pyc
+*.d
+*.pdf
+*.pcm
+*.root
+CrCon*.py
+radekTest*
+crab.log
+logs

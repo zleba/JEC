@@ -406,6 +406,7 @@ Bool_t matching::Process(Long64_t entry)
     CorrectJets(chsJets,   *rho, jetCorrsCHS);
     CorrectJets(puppiJets, *rho, jetCorrsPUPPI);
 
+    DoDijetResolution(fileId);
 
     const double jetSel = 5;
 
