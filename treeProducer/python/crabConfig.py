@@ -2,7 +2,7 @@
 #source /cvmfs/cms.cern.ch/crab3/crab.sh
 
 #File tag for the outputFileNames and jobNames
-fileTag = 'puppi0_'
+fileTag = 'puppi2_'
 
 from dataSets  import *
 

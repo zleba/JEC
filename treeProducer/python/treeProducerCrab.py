@@ -56,36 +56,36 @@ task = cms.Task()
 
 ############ MET for CHS
 
-def clean_met_(met):
-    del met.t01Variation
-    del met.t1Uncertainties
-    del met.t1SmearedVarsAndUncs
-    del met.tXYUncForRaw
-    del met.tXYUncForT1
-    del met.tXYUncForT01
-    del met.tXYUncForT1Smear
-    del met.tXYUncForT01Smear
-
-from PhysicsTools.PatAlgos.tools.metTools import addMETCollection
-
-## Raw PAT METs
-process.load('RecoMET.METProducers.PFMET_cfi')
-process.pfMet.src = cms.InputTag("packedPFCandidates")
-task.add(process.pfMet)
-addMETCollection(process, labelName='patPFMetCHS', metSource='pfMet') # RAW MET
-addMETCollection(process, labelName='patPFMet', metSource='pfMet') # RAW MET
-process.patPFMet.addGenMET = False
-process.patPFMetCHS.addGenMET = False
-## Slimmed METs
-from PhysicsTools.PatAlgos.slimming.slimmedMETs_cfi import slimmedMETs
-#### CaloMET is not available in MiniAOD
-del slimmedMETs.caloMET
-# ### CHS
-process.slMETsCHS = slimmedMETs.clone()
-process.slMETsCHS.src = cms.InputTag("patPFMetCHS")
-process.slMETsCHS.rawUncertainties = cms.InputTag("patPFMetCHS") # only central value
-task.add(process.slMETsCHS)
-clean_met_(process.slMETsCHS)
+#def clean_met_(met):
+#    del met.t01Variation
+#    del met.t1Uncertainties
+#    del met.t1SmearedVarsAndUncs
+#    del met.tXYUncForRaw
+#    del met.tXYUncForT1
+#    del met.tXYUncForT01
+#    del met.tXYUncForT1Smear
+#    del met.tXYUncForT01Smear
+#
+#from PhysicsTools.PatAlgos.tools.metTools import addMETCollection
+#
+### Raw PAT METs
+#process.load('RecoMET.METProducers.PFMET_cfi')
+#process.pfMet.src = cms.InputTag("packedPFCandidates")
+#task.add(process.pfMet)
+#addMETCollection(process, labelName='patPFMetCHS', metSource='pfMet') # RAW MET
+#addMETCollection(process, labelName='patPFMet', metSource='pfMet') # RAW MET
+#process.patPFMet.addGenMET = False
+#process.patPFMetCHS.addGenMET = False
+### Slimmed METs
+#from PhysicsTools.PatAlgos.slimming.slimmedMETs_cfi import slimmedMETs
+##### CaloMET is not available in MiniAOD
+#del slimmedMETs.caloMET
+## ### CHS
+#process.slMETsCHS = slimmedMETs.clone()
+#process.slMETsCHS.src = cms.InputTag("patPFMetCHS")
+#process.slMETsCHS.rawUncertainties = cms.InputTag("patPFMetCHS") # only central value
+#task.add(process.slMETsCHS)
+#clean_met_(process.slMETsCHS)
 
 
 
@@ -143,7 +143,7 @@ process.ak8 = cms.EDAnalyzer('treeProducer',
 #  muons            = cms.InputTag('slimmedMuons'),
 #  electrons        = cms.InputTag('slimmedElectrons'),
   met1              = cms.InputTag('slimmedMETs'),
-  met2              = cms.InputTag('slMETsCHS'),
+  met2              = cms.InputTag('slimmedMETs'), #'slMETsCHS'
   met3              = cms.InputTag('slimmedMETsPuppi'),
   vertices         = cms.InputTag('offlineSlimmedPrimaryVertices'),
   rho              = cms.InputTag('fixedGridRhoFastjetAll'),
@@ -184,4 +184,4 @@ process.p = cms.Path(
    process.ak4
 )
 process.p.associate(task)
-process.p.associate(process.patAlgosToolsTask)
+#process.p.associate(process.patAlgosToolsTask)
