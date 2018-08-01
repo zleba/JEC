@@ -11,16 +11,16 @@ class QCDjet {
     public:
     int flavor      ;
     int flavorHadron;
-    float chf       ;
-    float nhf       ;
-    float phf       ;
-    float elf       ;
-    float muf       ;
-    int chm         ;
-    int nhm         ;
-    int phm         ;
-    int elm         ;
-    int mum         ;
+    //float chf       ;
+    //float nhf       ;
+    //float phf       ;
+    //float elf       ;
+    //float muf       ;
+    //int chm         ;
+    //int nhm         ;
+    //int phm         ;
+    //int elm         ;
+    //int mum         ;
     float jetJECtot;
     float jetJECl2l3Res;
 
@@ -28,7 +28,7 @@ class QCDjet {
     float area;
     float unc;
     ROOT::Math::PtEtaPhiM4D<float> p4;
-    bool tightID;
+    //bool tightID;
 
     QCDjet() {
     }

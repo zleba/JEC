@@ -70,6 +70,7 @@ inline QCDjet GetJet(const pat::Jet &ijet) {
     QCDjet jjet;
     jjet.flavor        =ijet.partonFlavour();
     jjet.flavorHadron  =ijet.hadronFlavour();
+    /*
     jjet.chf           =ijet.chargedHadronEnergyFraction();
     jjet.nhf           =ijet.neutralHadronEnergyFraction(); //NHF
     jjet.phf           =ijet.photonEnergyFraction();
@@ -80,6 +81,8 @@ inline QCDjet GetJet(const pat::Jet &ijet) {
     jjet.phm           =ijet.photonMultiplicity();
     jjet.elm           =ijet.electronMultiplicity();
     jjet.mum           =ijet.muonMultiplicity();
+    */
+
     jjet.area          =ijet.jetArea();
     //jjet.p4            =ROOT::Math::PtEtaPhiM4D<float>( ijet.correctedP4("Uncorrected").pt(), ijet.eta(), ijet.phi(), ijet.correctedP4("Uncorrected").mass() );
     jjet.p4            = ijet.correctedP4("Uncorrected");
@@ -195,6 +198,7 @@ class treeProducer : public edm::EDAnalyzer
     virtual bool isGoodJet(const pat::Jet &jet);
 //    float getPFMiniIsolation(edm::Handle<pat::PackedCandidateCollection> pfcands,const reco::Candidate *cand);
     void initialize();
+    vector<QCDjet> FillJets (edm::Handle<pat::JetCollection> &jets);
 
     //---- configurable parameters --------  
     Parameters p;
