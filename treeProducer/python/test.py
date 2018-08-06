@@ -8,6 +8,7 @@ def runTest(testSet):
     #return
     output="output_"+Short(testSet).replace('/','_')+".root"
     from subprocess import call
-    call(['cmsRun', 'treeProducerCrab.py', 'inputFiles=root://cms-xrd-global.cern.ch/'+inputSet, 'maxEvents=100', 'outputFile='+output])
+    call(['cmsRun', 'treeProducerCrab.py', 'inputFiles='+inputSet, 'maxEvents=100', 'outputFile='+output])
+    #root://cms-xrd-global.cern.ch/
 
 runTest(data16[0]);

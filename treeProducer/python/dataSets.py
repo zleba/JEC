@@ -1,5 +1,4 @@
 
-
 data16= [
         '/JetHT/Run2016B-07Aug17_ver2-v1/MINIAOD',
         '/JetHT/Run2016C-07Aug17-v1/MINIAOD',
@@ -23,7 +22,6 @@ import os,re
 #Get the short name
 def Short(s):
     return re.search(r'[^/]*(Run|QCD)[^/]*/[^-]*', s).group()
-
 
 
 #addresses of all files in give set (by default all are given)

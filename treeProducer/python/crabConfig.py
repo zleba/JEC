@@ -3,9 +3,7 @@
 
 #File tag for the outputFileNames and jobNames
 fileTag = 'puppi2_'
-
 from dataSets  import *
-
 sets =  data16
 
 if __name__ == '__main__':
