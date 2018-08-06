@@ -94,37 +94,30 @@ In general for shorter tasks `paralell` is faster as there is no waiting time.
 When `submit` command is used, it takes some time for jobs to start running, but there can be more of them than in `parallel`.
 
 
-##Adding JEC and calculating trigger weight (nTuple -> nTuple)
-The evaluation of the JEC correction by `JECcorrector` is quite slow, therefore, before the histograms are filled, the intermediate step is introduced to correct the jet pTs for the JEC.
+##Adding JEC and calculating trigger weight
+The evaluation of the JEC correction by `JECcorrector` is quite slow, therefore, before the histograms are filled, the intermediate step is introduced to correct the jet pTs for the JEC effects.
 
+By default all levels of JEC are applied, one can change the actual setup in the source file `processor.cc`.
 
+In addition to the application of the JEC, at this step the event weight is calculated in accordance with the trigger efficiency intervals based on leading jet pt.
+The events were the corresponding trigger element is not efficient are removed.
+Run the pre-analysis using:
+```
+submit processor inputDir output.root
+```
+Here inputDir is the directory containing ntuples from crab run, and the output.root is single root file containing result.
 
+##Filling histograms from pre-processed ntuples.
+In the next step the histograms can be filled from nTupes obtained in previous step.
+To do so run
+```
+parallel filler input.root histos.root
+```
+Where input.root is the address of the input nTuple file and histos.root is address of the output file containing filled histograms.
 
-
-The python config file for `cmsRun` is called `farm/treeProducer.py`.
-1) Fill the current directory into variable `currDir` of `treeProducer.py`
-2) Try test run by `cmsRun treeProducer.py`
-3) Run `./createJobs.py` to produce submit files for 2016 data, before running please fill the output directory, where the nTuples will be stored, and path to the valid `proxy.pem` file.
-4) Submit all files in `sub` directory by `for i in *.sub; do qsub $i; done`
-5) After all runs are finished, merge each period into single `root`-file using `hadd`
-
-## Filling the histograms with matching properties
-Currently all files fulfilling single- or double-jet trigger condition are sorted.
-For each such event both AK4CHS and AK4PUPPI jets are kept.
-The simple macro to run over the events and fill histogram with matching property is located in `macro/proofNew/matching.C`.
-The JEC are calculated on-the-fly.
-The path of the input data (from previous step) is filled in the `runProof.C`.
-
-To run test, try `./run.sh 30 0 B`, where `B` is the data period, `30` number of divisions and `0` is the acuall piece, here it can be number from `0` to `29`.
-
-If test is successful, run`./runAll.sh` to submit jobs to farm for whole data sample (should be finished in ~10 minutes).
-The resulting histogram files in `histos` folder needs to be merged into single `root`-file by `hadd`.
 
 ## Plotting histograms from the root-files with histograms
 Currently there is simple plotting macro in the `macro/proofNew` directory called `plotter.C`, to simplify the code, some functions from `plottingHelper` library are employed, more information on:
 ```https://github.com/zleba/PlottingHelper```
 for plotting itself do `root -l -b -q plotter.C`, check the input and output file which are hard-coded in the beginning of `void plotter()` function.
 
-
-## TODO
-Move to `ht_condor` batch system.
