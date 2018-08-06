@@ -94,7 +94,7 @@ In general for shorter tasks `paralell` is faster as there is no waiting time.
 When `submit` command is used, it takes some time for jobs to start running, but there can be more of them than in `parallel`.
 
 
-##Adding JEC and calculating trigger weight
+## Adding JEC and calculating trigger weight (nTuple -> nTuple)
 The evaluation of the JEC correction by `JECcorrector` is quite slow, therefore, before the histograms are filled, the intermediate step is introduced to correct the jet pTs for the JEC effects.
 
 By default all levels of JEC are applied, one can change the actual setup in the source file `processor.cc`.
@@ -107,7 +107,7 @@ submit processor inputDir output.root
 ```
 Here inputDir is the directory containing ntuples from crab run, and the output.root is single root file containing result.
 
-##Filling histograms from pre-processed ntuples.
+## Filling histograms from pre-processed ntuple (nTuple -> histos)
 In the next step the histograms can be filled from nTupes obtained in previous step.
 To do so run
 ```
@@ -116,7 +116,7 @@ parallel filler input.root histos.root
 Where input.root is the address of the input nTuple file and histos.root is address of the output file containing filled histograms.
 
 
-## Plotting histograms from the root-files with histograms
+## Plotting histograms from the root-files with histograms (histos -> pdf)
 Currently there is simple plotting macro in the `macro/proofNew` directory called `plotter.C`, to simplify the code, some functions from `plottingHelper` library are employed, more information on:
 ```https://github.com/zleba/PlottingHelper```
 for plotting itself do `root -l -b -q plotter.C`, check the input and output file which are hard-coded in the beginning of `void plotter()` function.
