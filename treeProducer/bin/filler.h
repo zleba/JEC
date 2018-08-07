@@ -46,7 +46,7 @@ static const vector<double> Ptbinning = {0, 1, 5, 6, 8, 10, 12, 15, 18, 21, 24, 
             hist[0]     ->Fill(x, y, z, wTot);
         }
 
-    } h;
+    };
 
 
 void Histos::Init()

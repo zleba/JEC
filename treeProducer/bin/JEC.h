@@ -80,16 +80,17 @@ public:
         return corr;
     }
 
-    JECs (string name) :
+    JECs (string name, string jetType) :
             isMC(name.find("MC") != string::npos),
             jecL1Fast      (nullptr),
             jecL2Relative  (nullptr),
             jecL3Absolute  (nullptr),
             jecL2L3Residual(nullptr)
     {
-
+//AK4PFchs
         auto initCorr = [&](string corrType) {
-            string wholePath =JECpath + "/" + name + "/" + name + "_" + corrType +"_AK4PFchs.txt";
+            string wholePath =JECpath + "/" + name + "/" + name + "_" + corrType +"_"+jetType+".txt";
+            //cout << "WholePath " << wholePath  << endl;
             auto corPars       = new JetCorrectorParameters(wholePath);
             vector<JetCorrectorParameters> corParsVec;
             corParsVec    .push_back(*corPars);

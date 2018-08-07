@@ -1,5 +1,7 @@
 #!/bin/zsh
 
+echo  ${1:-j}
+exit
 
 export DASCMD=$1
 export DASSRC=`readlink -ne $2`

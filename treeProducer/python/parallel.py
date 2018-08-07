@@ -1,8 +1,5 @@
 #!/usr/bin/env python
 
-import multiprocessing
-
-nProc = multiprocessing.cpu_count()
 
 #nProc = 19
 #tmpDir = '/tmp'
@@ -31,8 +28,13 @@ def setEnv(cmd, exDir):
 
 
 
-def parallel(cmd, In, Out, *argv):
+def parallel(cmd, In, Out, nProc=0, *argv):
     cmd = cmd.strip()
+
+    import multiprocessing
+    if nProc==0:
+        nProc = multiprocessing.cpu_count()
+
 
     from subprocess import Popen, call 
     import os.path

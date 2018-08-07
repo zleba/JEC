@@ -1,10 +1,21 @@
 #!/usr/bin/env python
 
-import sys
+
+import argparse
+parser = argparse.ArgumentParser()
+parser.add_argument("-j", "--nthreads", type=int, default=0, help="number of threads")
+parser.add_argument("command", help="command campatible with the input -> output structure")
+parser.add_argument("input", help="input directory or single root file")
+parser.add_argument("output", help="output root file")
+args = parser.parse_args()
+print args.command, args.input, args.output, 
+#print 'n',args.nthreads
+
+
+#import sys
 print ">>> start"
-assert(len(sys.argv) > 2)
+#assert(len(sys.argv) > 2)
 
-from DAS18.CommonTools.paralell import *
-print ">>> Parallel(" + sys.argv[1] + ", " + sys.argv[2] + ", ...)"
-parallel(sys.argv[1], sys.argv[2], *sys.argv[3:])
-
+from JEC.treeProducer.parallel import *
+print ">>> parallel("+args.command+", "+args.input+", "+args.output+")"
+parallel(args.command, args.input, args.output, args.nthreads)

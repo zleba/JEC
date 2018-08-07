@@ -21,12 +21,14 @@ double dist2(const ROOT::Math::PtEtaPhiM4D<float> &j1, const ROOT::Math::PtEtaPh
     return (dEta*dEta + dPhi*dPhi);
 }
 
+Histos h;
 
-void DoMikkoMatching(int runNo, vector<QCDjet> *chsJets, vector<QCDjet> *puppiJets, double wgt, double wgtTot)
+
+void DoMikkoMatching(int runNo, vector<QCDjet> *chsJets, vector<QCDjet> *testJets, double wgt, double wgtTot)
 {
     int fileId =  getPer(runNo) - 'A';
 
-    if(chsJets->size() < 2 || puppiJets->size() < 1) return;
+    if(chsJets->size() < 2 || testJets->size() < 1) return;
 
     auto   CHStag   = chsJets->at(0).p4;
     auto   CHSprobe = chsJets->at(1).p4;
@@ -37,51 +39,45 @@ void DoMikkoMatching(int runNo, vector<QCDjet> *chsJets, vector<QCDjet> *puppiJe
     if (dPhi < 2.8) return;
 
 
-    if(gRandom->Uniform() < 0.5) swap(CHStag, CHSprobe);
-
-
     if(abs(CHStag.Eta()) > 1.3) return;
 
-    //Check trigger efficiency
 
     //Calculate the variable ala 
     //https://indico.cern.ch/event/544604/contributions/2210109/attachments/1294031/1928613/Giugno-17-2016_-_CaloScouting.pdf
 
     int m = -1;
-    for(int j = 0; j < (int)puppiJets->size(); ++j) {
-        double d2 = dist2(puppiJets->at(j).p4, CHSprobe);
+    for(int j = 0; j < (int) testJets->size(); ++j) {
+        double d2 = dist2(testJets->at(j).p4, CHSprobe);
         if(d2 < 0.2*0.2) {
             m = j;
             break;
         }
     }
     if(m == -1) return; //not found
-    auto PUPPIprobe = puppiJets->at(m).p4;
+    auto TESTprobe = testJets->at(m).p4;
 
     m = -1;
-    for(int j = 0; j < (int)puppiJets->size(); ++j) {
-        double d2 = dist2(puppiJets->at(j).p4, CHStag);
+    for(int j = 0; j < (int)testJets->size(); ++j) {
+        double d2 = dist2(testJets->at(j).p4, CHStag);
         if(d2 < 0.2*0.2) {
             m = j;
             break;
         }
     }
-    auto PUPPItag = PUPPIprobe;
-    if(m != -1) 
-        PUPPItag = puppiJets->at(m).p4;
+    auto TESTtag = TESTprobe;
+    if(m != -1) TESTtag = testJets->at(m).p4;
 
 
 
-
-    double var1 = PUPPIprobe.Pt() /  CHStag.Pt();
+    double var1 = TESTprobe.Pt() /  CHStag.Pt();
     double var2 = CHSprobe.Pt() /  CHStag.Pt();
-    double var3 = PUPPIprobe.Pt() / CHSprobe.Pt();
-    double var4 = PUPPIprobe.Pt();
+    double var3 = TESTprobe.Pt() / CHSprobe.Pt();
+    double var4 = TESTprobe.Pt();
 
-    double avgProbe = sqrt(CHSprobe.Pt() * PUPPIprobe.Pt());
+    double avgProbe = sqrt(CHSprobe.Pt() * TESTprobe.Pt());
 
     double pTtag = CHStag.Pt();
-    double eta   = PUPPIprobe.Eta();
+    double eta   = TESTprobe.Eta();
     auto fillHist = [&](array<TProfile2D*,nPer> *hProf,  int fId, double w) {
         //cout << "Fill begin " << var1 << " "<< var2 <<" "<< var3 <<" "<<var4 << endl;
         //cout << "b"<<endl;
@@ -89,16 +85,16 @@ void DoMikkoMatching(int runNo, vector<QCDjet> *chsJets, vector<QCDjet> *puppiJe
         hProf[1][fId]->Fill(eta, pTtag, var2, w);
         hProf[2][fId]->Fill(eta, pTtag, var3, w);
         hProf[3][fId]->Fill(eta, pTtag, var4, w);
-        hProf[4][fId]->Fill(eta, PUPPIprobe.Pt(), var3, w); //resambles the old way
+        hProf[4][fId]->Fill(eta, TESTprobe.Pt(), var3, w); //resambles the old way
         hProf[5][fId]->Fill(eta, CHSprobe.Pt(),   var3, w); 
         hProf[6][fId]->Fill(eta, avgProbe,        var3, w); 
         hProf[7][fId]->Fill(CHSprobe.Eta(), pTtag,   CHSprobe.Pt(), w); 
 
-        hProf[8][fId]->Fill(eta, PUPPIprobe.Pt(), CHSprobe.Pt(), w); //resambles the old way
-        hProf[9][fId]->Fill(eta, CHSprobe.Pt(),   PUPPIprobe.Pt(), w); 
+        hProf[8][fId]->Fill(eta, TESTprobe.Pt(), CHSprobe.Pt(), w); //resambles the old way
+        hProf[9][fId]->Fill(eta, CHSprobe.Pt(),   TESTprobe.Pt(), w); 
 
         if(m != -1) { //puppiTag exist
-            double pTtagP = PUPPItag.Pt(); 
+            double pTtagP = TESTtag.Pt(); 
             hProf[10][fId]->Fill(eta, pTtagP, var3, w);
             hProf[11][fId]->Fill(eta, pTtagP, var4, w);
             hProf[12][fId]->Fill(CHSprobe.Eta(), pTtagP,   CHSprobe.Pt(), w); 
@@ -139,19 +135,19 @@ void filler(TString input, TString output, int nSplit = 1, int nNow = 0)
     int runNo;
     float rho;
     float wgt, wgtTot;
-    vector<QCDjet> *chsJets=nullptr, *puppiJets=nullptr;
+    vector<QCDjet> *chsJets=nullptr, *testJets=nullptr;
     oldchain->SetBranchAddress("runNo", &runNo);
     oldchain->SetBranchAddress("rho", &rho);
     oldchain->SetBranchAddress("wgt", &wgt);
     oldchain->SetBranchAddress("wgtTot", &wgtTot);
     //oldchain->SetBranchAddress("triggerBit", &triggerBit);
-    oldchain->SetBranchAddress("chsJets", &chsJets);
-    oldchain->SetBranchAddress("puppiJets", &puppiJets);
+    oldchain->SetBranchAddress("chs4Jets", &chsJets);
+    oldchain->SetBranchAddress("chs8Jets", &testJets);
 
     TFile *newfile = TFile::Open(output, "RECREATE");
-    Histos h;
     h.Init();
 
+    cout << h.hProf[0][0] << endl;
 
    Long64_t N = oldchain->GetEntries();
    auto range = splitRange(N, nSplit, nNow);
@@ -159,17 +155,12 @@ void filler(TString input, TString output, int nSplit = 1, int nNow = 0)
         PrintCounterAndIncrement(output, range);
         oldchain->GetEntry(i);
 
-
-        //DoDijetResolution(fileId);
-
         const double jetSel = 5;
 
+        if(chsJets->size() < 1 || testJets->size() < 1) continue;
 
-        if(chsJets->size() < 1 || puppiJets->size() < 1) continue;
 
-
-        //DoMikkoMatching(fileId);
-        DoMikkoMatching(runNo, chsJets, puppiJets, wgt, wgtTot);
+        DoMikkoMatching(runNo, chsJets, testJets, wgt, wgtTot);
 
 
         h.Fill1D(h.hJetPt, chsJets->at(0).p4.Pt());
@@ -180,18 +171,9 @@ void filler(TString input, TString output, int nSplit = 1, int nNow = 0)
         }
 
 
-        //cout << "Init start " <<entry <<" "<< __LINE__ << endl;
-        //cout << "Second part OK" << endl;
-
-
-
-        //cout << CHSjetPt[0] << " "<< CHSjetPt[0]*(1+CHSjetUnc[0]) <<" "<< CHSjetPt[0]*(1-CHSjetUnc[0]) << endl;
-
-
-        for (unsigned i = 0; i < puppiJets->size(); ++i) {
-            double eta = puppiJets->at(i).p4.Eta();
-            double pt = puppiJets->at(i).p4.Pt();
-            double area = puppiJets->at(i).area;
+        for (unsigned i = 0; i < testJets->size(); ++i) {
+            double eta = testJets->at(i).p4.Eta();
+            double pt = testJets->at(i).p4.Pt();
 
             //double CorFactorRes, Unc;
             //vector<string> dumy;
@@ -203,7 +185,7 @@ void filler(TString input, TString output, int nSplit = 1, int nNow = 0)
         for (unsigned i = 0; i < chsJets->size(); ++i) {
             double eta = chsJets->at(i).p4.Eta();
             double pt = chsJets->at(i).p4.Pt();
-            double area = chsJets->at(i).area;
+            //double area = chsJets->at(i).area;
 
             //double CorFactorRes, Unc;
             //vector<string> dumy;
@@ -222,9 +204,9 @@ void filler(TString input, TString output, int nSplit = 1, int nNow = 0)
             Indx.insert(i);
 
 
-        for(unsigned i = 0; i < puppiJets->size(); ++i) {
-            double pt   = puppiJets->at(i).p4.Pt();
-            double Eta = puppiJets->at(i).p4.Eta();
+        for(unsigned i = 0; i < testJets->size(); ++i) {
+            double pt   = testJets->at(i).p4.Pt();
+            double Eta = testJets->at(i).p4.Eta();
             if(pt < jetSel) continue;
 
             h.Fill2D(h.hEtaPtPUPPI, Eta, pt);
@@ -232,7 +214,7 @@ void filler(TString input, TString output, int nSplit = 1, int nNow = 0)
             int m = -1;
             for(int ind :  Indx) {
                 //cout << ind << endl;
-                double d2 = dist2(puppiJets->at(i).p4, chsJets->at(ind).p4);
+                double d2 = dist2(testJets->at(i).p4, chsJets->at(ind).p4);
                 if(d2 < 0.2*0.2) {
                     m = ind;
                     Indx.erase(m);
@@ -240,10 +222,9 @@ void filler(TString input, TString output, int nSplit = 1, int nNow = 0)
                 }
             }
 
-
             if(m != -1) {
                 //cout << "match " << PUPPIjetPt[i] << " "<< PUPPIjetPt[i] / CHSjetPt[m] << endl;
-                double r = puppiJets->at(i).p4.Pt() / chsJets->at(m).p4.Pt();
+                double r = testJets->at(i).p4.Pt() / chsJets->at(m).p4.Pt();
                 h.Fill3D(h.hBalEtaPt[0], Eta, pt, r);
                 if(rho < 15)
                     h.Fill3D(h.hBalEtaPt[1], Eta, pt, r);
@@ -261,6 +242,7 @@ void filler(TString input, TString output, int nSplit = 1, int nNow = 0)
             }
         }
     }
+    newfile->Write();
     newfile->Close();
 
 }
