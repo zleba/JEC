@@ -1,0 +1,9 @@
+<flags CXXFLAGS="-g    -std=c++17" />
+
+<use name="root" />
+<use name="rootgraphics"/>
+
+<lib name="stdc++fs" />
+<use name="CondFormats/JetMETObjects" />
+
+<bin name="processor" file="processor.cc" />
