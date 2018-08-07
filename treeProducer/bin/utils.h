@@ -24,5 +24,28 @@ inline std::pair<int, int> splitRange(int N, int nSplit, int nNow)
     return std::make_pair(nStart, nEnd);
 }
 
+inline void PrintCounterAndIncrement(const TString &tag,  const std::pair<int,int> &range)
+{
+    static long long i =0;
+    static long long percentOld = -1;
+    static long long nEvSlice = range.second - range.first;
+
+    auto percent = (100ll*i)/nEvSlice;
+
+    if(percent != percentOld && percent % 10 == 0) {
+        std::cout << tag <<'\t' << percent << '%' << std::endl;
+        percentOld = percent;
+    }
+    ++i;
+}
+
+
+
+
+
+
+
+
+
 #endif
 

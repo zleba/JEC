@@ -1,0 +1,4 @@
+JOB A runAnalyser.submit 
+JOB B merge.submit
+PARENT A CHILD B
+

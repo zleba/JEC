@@ -1,0 +1,54 @@
+#!/bin/zsh
+
+
+export DASCMD=$1
+export DASSRC=`readlink -ne $2`
+export DASDEST=`readlink -nf $3`
+
+export DASARGS="`echo $@[4,$#]`"
+
+# create a temporary directory
+dirName=`date +%Y%m%d%H%M%S%N`_${DASCMD}
+nafTmp=/nfs/dust/cms/user/${USER}/tmp/$dirName
+mkdir -p $nafTmp/out $nafTmp/logs
+
+# copy the executable (fire-and-forget strategy)
+execPath=`which $DASCMD`
+cp $execPath $nafTmp
+
+# copy dependencies
+for library in `ldd $execPath | grep $CMSSW_BASE | awk '{print $3}'`
+do
+    cp $library $nafTmp
+done
+
+# copy job shit
+cp ${CMSSW_BASE}/src/JEC/treeProducer/farm/* $nafTmp
+
+# export some environment variables (NB: sufficient for PATH but not for LD_LIBRARY_PATH due to this sh***y condor system)
+export LD_LIBRARY_PATH_STORED=$LD_LIBRARY_PATH
+export NAFTMP=$nafTmp
+export NJOBS=20
+export OUTFILES="`echo $nafTmp/out/{0..$((NJOBS-1))}.root`"
+
+# submit the job
+cd $nafTmp
+
+# condor DAG variables
+export _CONDOR_DAGMAN_HOLD_CLAIM_TIME=0
+#export _CONDOR_NEGOTIATOR_INTERVAL=4
+#export _CONDOR_NEGOTIATOR_CYCLE_DELAY=4
+
+condor_submit_dag -batch-name $dirName merge.dag
+
+# wait for job to finish
+echo $DASDEST
+#condor_wait -status -debug -echo merge.dag.dagman.log
+nRunning=1
+while ((nRunning > 0))
+do
+    echo Running Jobs
+    nRunning=`condor_q -constraint 'JobBatchName == "'$dirName'"' -af ClusterId  ProcId JobStatus cmd Arguments | awk '{print $1,$2,$3,$4,$5}' | tee /dev/tty| wc -l`
+    #condor_q -userlog  merge.dag.dagman.log
+    sleep 2
+done

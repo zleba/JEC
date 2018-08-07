@@ -91,7 +91,6 @@ void ApplyJEC (int runNo, double rho, vector<QCDjet> & jets)
 
 
 
-
 void procesor (TString input, TString output, int nSplit = 1, int nNow = 0)
 {
     //gROOT->SetBatch();
@@ -129,11 +128,8 @@ void procesor (TString input, TString output, int nSplit = 1, int nNow = 0)
     auto range = splitRange(N, nSplit, nNow);
 
     cout << "I am inside " << endl;
-    int j = 0;
-    //int runMin = 1000*1000*1000;
-    //int runMax = 0;
-    for (int i=range.first; i < range.second; ++i, ++j) {
-        //cout << "Before " << i <<  endl;
+    for (int i=range.first; i < range.second; ++i) {
+        PrintCounterAndIncrement(output, range);
         oldchain->GetEntry(i);
 
         //evnt->weights[0] *= factor;
@@ -145,7 +141,6 @@ void procesor (TString input, TString output, int nSplit = 1, int nNow = 0)
 
         if(chsJets->size() == 0) continue;
 
-
         int perID = getPer(runNo) - 'A';
         int id;
         double wgt, wgtTot;
@@ -155,13 +150,7 @@ void procesor (TString input, TString output, int nSplit = 1, int nNow = 0)
         if(triggerBit->at(id) != 1) continue;
         wgt_ = wgt; wgtTot_ = wgtTot;
 
-        //runMin = min(runMin, runNo);
-        //runMax = max(runMax, runNo);
-
         newtree->Fill();
-
-        if (j % 1000000 == 0)
-            cout << output << '\t' << 100.*j/N << '%' <<" "<<  (100.*j*nSplit)/N << '%' <<    endl;
     }
     //cout << "Helenka " << runMin <<" "<< runMax << endl;
 
@@ -181,6 +170,5 @@ int main (int argc, char * argv[])
         cout << "Wrong number of arguments" << endl;
         return EXIT_FAILURE;
     }
-
     return EXIT_SUCCESS;
 }
