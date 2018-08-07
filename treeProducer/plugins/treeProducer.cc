@@ -129,8 +129,9 @@ void treeProducer::beginJob()
   outTree_->Branch("metPtPuppi"          ,&metPtPuppi_        ,"metPtPuppi/F");
   outTree_->Branch("metPhiPuppi"         ,&metPhiPuppi_       ,"metPhiPuppi/F");
 
-  outTree_->Branch("chsJets"           ,&chsJets_);
-  outTree_->Branch("puppiJets"         ,&puppiJets_);
+  outTree_->Branch("chs4Jets"          ,&chs4Jets_);
+  outTree_->Branch("chs8Jets"          ,&chs8Jets_);
+  outTree_->Branch("puppi4Jets"         ,&puppi4Jets_);
 
 
   //  outTree_->Branch("metPuppimass_"        ,&metPuppimass_      ,"metPuppimass_/F");
@@ -138,8 +139,9 @@ void treeProducer::beginJob()
 
   HLTjets_        = new std::vector< ROOT::Math::PtEtaPhiM4D<float> >;
 
-  chsJets_         = new std::vector<QCDjet>;
-  puppiJets_       = new std::vector<QCDjet>;
+  chs4Jets_         = new std::vector<QCDjet>;
+  chs8Jets_         = new std::vector<QCDjet>;
+  puppi4Jets_       = new std::vector<QCDjet>;
   genJets_         = new std::vector<ROOT::Math::PtEtaPhiM4D<float>>;
 
   /*
@@ -223,8 +225,9 @@ void treeProducer::analyze(edm::Event const& iEvent, edm::EventSetup const& iSet
   edm::Handle<pat::TriggerObjectStandAloneCollection> triggerObjects1;
 
   iEvent.getByToken(p.genjetsToken, genjets);
-  iEvent.getByToken(p.jetsCHSToken,jetsCHS);
-  iEvent.getByToken(p.jetsPUPPIToken,jetsPUPPI);
+  iEvent.getByToken(p.jetsCHS4Token,jetsCHS4);
+  iEvent.getByToken(p.jetsCHS8Token,jetsCHS8);
+  iEvent.getByToken(p.jetsPUPPI4Token,jetsPUPPI4);
   iEvent.getByToken(p.candsToken,cands);
   iEvent.getByToken(p.rhoToken,rho);
   iEvent.getByToken(p.recVtxsToken,recVtxs);  
@@ -324,10 +327,12 @@ void treeProducer::analyze(edm::Event const& iEvent, edm::EventSetup const& iSet
 
 
 
-  vector<QCDjet> jetVecCHS = FillJets(jetsCHS);
-  chsJets_ = &jetVecCHS;
-  vector<QCDjet> jetVecPUPPI = FillJets(jetsPUPPI);
-  puppiJets_ = &jetVecPUPPI;
+  vector<QCDjet> jetVecCHS4 = FillJets(jetsCHS4);
+  chs4Jets_ = &jetVecCHS4;
+  vector<QCDjet> jetVecCHS8 = FillJets(jetsCHS8);
+  chs8Jets_ = &jetVecCHS8;
+  vector<QCDjet> jetVecPUPPI4 = FillJets(jetsPUPPI4);
+  puppi4Jets_ = &jetVecPUPPI4;
 
 
   if(p.isMC_) {

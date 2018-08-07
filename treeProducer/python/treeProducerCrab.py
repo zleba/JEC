@@ -164,9 +164,10 @@ process.ak8 = cms.EDAnalyzer('treeProducer',
   isPrint         = cms.untracked.bool(True),                           
 )
 
-process.ak4 = process.ak8.clone(
-    jetsCHS            = cms.InputTag('slimmedJets'),
-    jetsPUPPI          = cms.InputTag('slimmedJetsPuppi'),
+process.alljets = process.ak8.clone(
+    jetsCHS4            = cms.InputTag('slimmedJets'),
+    jetsPUPPI4          = cms.InputTag('slimmedJetsPuppi'),
+    jetsCHS8            = cms.InputTag('slimmedJetsAK8'),
     triggerNames    = cms.vstring('HLT_PFJet40_v','HLT_PFJet60_v','HLT_PFJet80_v','HLT_PFJet140_v','HLT_PFJet200_v','HLT_PFJet260_v','HLT_PFJet320_v','HLT_PFJet400_v','HLT_PFJet450_v','HLT_PFJet500_v',
         'HLT_DiPFJetAve40_v', 'HLT_DiPFJetAve60_v', 'HLT_DiPFJetAve80_v', 'HLT_DiPFJetAve140_v', 'HLT_DiPFJetAve200_v', 'HLT_DiPFJetAve260_v', 'HLT_DiPFJetAve320_v', 'HLT_DiPFJetAve400_v', 'HLT_DiPFJetAve500_v',
        'HLT_DiPFJetAve60_HFJEC_v', 'HLT_DiPFJetAve80_HFJEC_v', 'HLT_DiPFJetAve100_HFJEC_v', 'HLT_DiPFJetAve160_HFJEC_v', 'HLT_DiPFJetAve220_HFJEC_v', 'HLT_DiPFJetAve300_HFJEC_v',),
@@ -181,7 +182,7 @@ process.ak4 = process.ak8.clone(
 process.p = cms.Path(
 #   process.ak8*process.ak4 
 #   process.ak4*
-   process.ak4
+   process.alljets
 )
 process.p.associate(task)
 #process.p.associate(process.patAlgosToolsTask)

@@ -3,6 +3,9 @@
 
 #include <experimental/filesystem>
 #include <vector>
+#include <iostream>
+#include  <cassert>
+#include  "TString.h"
 
 using namespace std::experimental::filesystem;
 
@@ -40,9 +43,21 @@ inline void PrintCounterAndIncrement(const TString &tag,  const std::pair<int,in
 }
 
 
-
-
-
+inline char getPer(int run)
+{
+     if (273158 <= run && run <= 275376) return 'B';
+else if (275657 <= run && run <= 276283) return 'C';
+else if (276315 <= run && run <= 276811) return 'D';
+else if (276831 <= run && run <= 277420) return 'E';
+else if (277981 <= run && run <= 278808) return 'F';
+else if (278820 <= run && run <= 280385) return 'G';
+else if (281613 <= run && run <= 284044) return 'H';
+     else {
+         std::cout << "Wrong run " << std::endl;
+         std::exit(1);
+         return 'x';
+     }
+}
 
 
 

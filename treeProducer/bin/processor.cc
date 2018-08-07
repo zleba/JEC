@@ -4,6 +4,7 @@
 #include <TFile.h>
 #include <TROOT.h>
 #include <TH1D.h>
+#include <TRandom.h>
 #include <vector>
 
 #include "utils.h"
@@ -15,21 +16,6 @@
 using namespace std::experimental::filesystem;
 using namespace std;
 
-char getPer(int run)
-{
-     if (273158 <= run && run <= 275376) return 'B';
-else if (275657 <= run && run <= 276283) return 'C';
-else if (276315 <= run && run <= 276811) return 'D';
-else if (276831 <= run && run <= 277420) return 'E';
-else if (277981 <= run && run <= 278808) return 'F';
-else if (278820 <= run && run <= 280385) return 'G';
-else if (281613 <= run && run <= 284044) return 'H';
-     else {
-        cout << "Wrong run " << endl;
-        assert(0);
-        return 'x';
-     }
-}
 
 
 
@@ -95,69 +81,67 @@ void procesor (TString input, TString output, int nSplit = 1, int nNow = 0)
 {
     //gROOT->SetBatch();
     //Get old file, old tree and set top branch address
-    TChain * oldchain = new TChain("ak4/events"); // arg = path inside the ntuple
+    TChain * inputChain = new TChain("ak4/events"); // arg = path inside the ntuple
     for(auto f : GetFiles(input))
-        if(!f.Contains("failed")) oldchain->Add(f);
+        if(!f.Contains("failed")) inputChain->Add(f);
 
     int runNo;
     float rho;
     vector<bool> *triggerBit=nullptr;
     vector<QCDjet> *chsJets=nullptr, *puppiJets=nullptr;
-    oldchain->SetBranchAddress("runNo", &runNo);
-    oldchain->SetBranchAddress("rho", &rho);
-    oldchain->SetBranchAddress("triggerBit", &triggerBit);
-    oldchain->SetBranchAddress("chsJets", &chsJets);
-    oldchain->SetBranchAddress("puppiJets", &puppiJets);
+    inputChain->SetBranchAddress("runNo", &runNo);
+    inputChain->SetBranchAddress("rho", &rho);
+    inputChain->SetBranchAddress("triggerBit", &triggerBit);
+    inputChain->SetBranchAddress("chsJets", &chsJets);
+    inputChain->SetBranchAddress("puppiJets", &puppiJets);
 
 
     // saving MC weight 
-    TFile *newfile = TFile::Open(output, "RECREATE");
-    TTree *newtree = oldchain->CloneTree(0);
+    TFile *outputFile = TFile::Open(output, "RECREATE");
+    TTree *outputTree = inputChain->CloneTree(0);
     float wgt_, wgtTot_;
-    newtree->Branch("wgt"    ,&wgt_      ,"wgt/F");
-    newtree->Branch("wgtTot"    ,&wgtTot_   ,"wgtTot/F");
+    outputTree->Branch("wgt"    ,&wgt_      ,"wgt/F");
+    outputTree->Branch("wgtTot"    ,&wgtTot_   ,"wgtTot/F");
 
-    cout << "Entries" << endl;
-    Long64_t N = oldchain->GetEntries();
+    cout << "Calculating #entries" << endl;
+    Long64_t N = inputChain->GetEntries();
     cout << input << '\t' << N << '\t' << output << endl;
 
     Luminosity lum;
     lum.LoadLumis();
 
-    cout << "Calculate splitting" << endl;
     auto range = splitRange(N, nSplit, nNow);
 
-    cout << "I am inside " << endl;
-    for (int i=range.first; i < range.second; ++i) {
+    for (int i=range.first; i < range.second; ++i) { //Event LOOP --start
         PrintCounterAndIncrement(output, range);
-        oldchain->GetEntry(i);
-
-        //evnt->weights[0] *= factor;
-        //cout << runNo << endl;
+        inputChain->GetEntry(i);
 
         //JEC corrections
         ApplyJEC(runNo, rho, *chsJets);
         ApplyJEC(runNo, rho, *puppiJets);
 
-        if(chsJets->size() == 0) continue;
+        //For use in probe+tag method at least two jets are needed
+        if(chsJets->size() < 2) continue;
+        //Randomly swap leading and subleading
+        if(gRandom->Uniform() < 0.5) swap(chsJets->at(0), chsJets->at(1));
+        //cout <<"Radek " <<  chsJets->at(0).p4.Pt() <<" "<<  chsJets->at(1).p4.Pt() << endl;
 
         int perID = getPer(runNo) - 'A';
         int id;
         double wgt, wgtTot;
-        tie(wgt,wgtTot,id) = lum.GetWeightID(perID, chsJets->at(0).p4.Pt());
+        tie(wgt,wgtTot,id) = lum.GetWeightID(perID, chsJets->at(0).p4.Pt()); //check that tag jet is within trigger acceptance
         //cout << wgt << " "<< wgtTot << endl;
         if(wgt == 0 || id < 0)  continue;
         if(triggerBit->at(id) != 1) continue;
         wgt_ = wgt; wgtTot_ = wgtTot;
 
-        newtree->Fill();
-    }
-    //cout << "Helenka " << runMin <<" "<< runMax << endl;
+        outputTree->Fill();
+    } //Event LOOP --start
 
     /* closing */
-    newtree->AutoSave();
-    newfile->Close();
-    delete oldchain;
+    outputTree->AutoSave();
+    outputFile->Close();
+    delete inputChain;
     cout << "Done " << nNow << endl;
 }
 

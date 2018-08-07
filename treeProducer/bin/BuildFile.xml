@@ -7,3 +7,4 @@
 <use name="CondFormats/JetMETObjects" />
 
 <bin name="processor" file="processor.cc" />
+<bin name="filler" file="filler.cc" />

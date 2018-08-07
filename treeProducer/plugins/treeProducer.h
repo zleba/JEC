@@ -93,7 +93,7 @@ inline QCDjet GetJet(const pat::Jet &ijet) {
 
 
 struct Parameters {
-    edm::EDGetTokenT<pat::JetCollection> jetsCHSToken, jetsPUPPIToken;
+    edm::EDGetTokenT<pat::JetCollection> jetsCHS4Token, jetsCHS8Token, jetsPUPPI4Token;
     edm::EDGetTokenT<GenJetCollection> genjetsToken;
     //  muonsToken         
     //electronsToken       
@@ -129,10 +129,11 @@ struct Parameters {
     edm::EDGetTokenT<reco::JetFlavourInfoMatchingCollection> jetFlavourInfosToken_;
 
     Parameters(edm::ParameterSet const& cfg,  edm::ConsumesCollector && iC) {
-        jetsCHSToken             = iC.consumes<pat::JetCollection>(cfg.getParameter<edm::InputTag>("jetsCHS"));
-        jetsPUPPIToken           = iC.consumes<pat::JetCollection>(cfg.getParameter<edm::InputTag>("jetsPUPPI"));
+        jetsCHS4Token             = iC.consumes<pat::JetCollection>(cfg.getParameter<edm::InputTag>("jetsCHS4"));
+        jetsCHS8Token             = iC.consumes<pat::JetCollection>(cfg.getParameter<edm::InputTag>("jetsCHS8"));
+        jetsPUPPI4Token           = iC.consumes<pat::JetCollection>(cfg.getParameter<edm::InputTag>("jetsPUPPI4"));
 
-        stringstream temp; temp << cfg.getParameter<edm::InputTag>("jetsCHS");
+        stringstream temp; temp << cfg.getParameter<edm::InputTag>("jetsCHS4");
         jetType_ = temp.str();
 
         genjetsToken          = iC.consumes<GenJetCollection>(cfg.getUntrackedParameter<edm::InputTag>("genjets",edm::InputTag("")));
@@ -220,7 +221,7 @@ class treeProducer : public edm::EDAnalyzer
     float rho_,met_,metSig_,ht_,mva_,pvRho_,pvz_,pvndof_,pvchi2_,mvaGen_,metGenSig_;
     float metEtCHS_,metSigEt_,metSumEtCHS_,metEtPF_,metSigEtPF_,metSumEtPF_,metEtPuppi_,metSigEtPuppi_,metSumEtPuppi_;
     float metPtCHS_,metPhiCHS_,metPtPF_,metPhiPF_,metPtPuppi_,metPhiPuppi_;
-    vector<QCDjet> *chsJets_, *puppiJets_;
+    vector<QCDjet> *chs4Jets_, *puppi4Jets_, *chs8Jets_;
     vector< ROOT::Math::PtEtaPhiM4D<float> > *HLTjets_, *genJets_;
 
     std::vector<bool> *triggerBit_;
@@ -270,7 +271,7 @@ class treeProducer : public edm::EDAnalyzer
     std::vector<bool> *isBJetGen_;
     std::vector<bool> *isWJetGen_;
 
-    edm::Handle<pat::JetCollection> jetsCHS, jetsPUPPI;
+    edm::Handle<pat::JetCollection> jetsCHS4, jetsPUPPI4, jetsCHS8;
     edm::Handle<GenJetCollection> genjets;
     //edm::Handle<pat::MuonCollection> muons;
     //edm::Handle<pat::ElectronCollection> electrons;
