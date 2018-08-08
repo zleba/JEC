@@ -88,6 +88,10 @@ submit   myAnalyser input output
 These commands always analyse the whole input and save the result to output.
 The `parallel` command run the program parallel on cores of the current working machine, whereas `submit` command submit the task to HTcondor batch system.
 The intermediate results from runs over the slices are stored in the temp directory and can be investigated for debugging purposes. 
+To change address of the temp directory, see the script
+```
+scripts/getTempDir
+```
 The overall speed depends on the given working machine and complexity of the task.
 In general for shorter tasks `paralell` is faster as there is no waiting time.
 When `submit` command is used, it takes some time for jobs to start running, but there can be more of them than in `parallel`.
