@@ -1,7 +1,0 @@
-for i in `cat $1`
-do
-    echo err/$i.err
-    cat err/$i.err
-    #cat out/$i.out
-
-done

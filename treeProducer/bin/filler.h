@@ -28,6 +28,7 @@ static const vector<double> Ptbinning = {0, 1, 5, 6, 8, 10, 12, 15, 18, 21, 24, 
         array<TH3D*,nPer> hRhochs;
                                           
         array<TH2D*,nPer> hEtaPtCHS;
+        array<TH2D*,nPer> hEtaPtCHSalone;
         array<TH2D*,nPer> hEtaPtPUPPI;
         array<TH2D*,nPer> hEtaPtPUPPIalone;
         void Init();
@@ -104,6 +105,8 @@ void Histos::Init()
                                                                           rhoBins.size()-1, rhoBins.data());
 
         hEtaPtCHS[i] =  new TH2D(Form("hEtaPtCHS_%c",per), Form("hEtaPtCHS_%c",per), etaBins.size()-1, etaBins.data(),Ptbinning.size()-1, Ptbinning.data() );
+        hEtaPtCHSalone[i] =  new TH2D(Form("hEtaPtCHSalone_%c",per), Form("hEtaPtCHSalone_%c",per), etaBins.size()-1, etaBins.data(),Ptbinning.size()-1, Ptbinning.data() );
+
         hEtaPtPUPPI[i] = new TH2D(Form("hEtaPtPUPPI_%c",per), Form("hEtaPtPUPPI_%c",per), etaBins.size()-1, etaBins.data(),Ptbinning.size()-1, Ptbinning.data() );
         hEtaPtPUPPIalone[i] = new TH2D(Form("hEtaPtPUPPIalone_%c",per), Form("hEtaPtPUPPIalone_%c",per), etaBins.size()-1, etaBins.data(),Ptbinning.size()-1, Ptbinning.data() );
 

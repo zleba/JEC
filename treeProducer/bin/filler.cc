@@ -162,6 +162,8 @@ void filler(TString input, TString output, int nSplit = 1, int nNow = 0)
 
         DoMikkoMatching(runNo, chsJets, testJets, wgt, wgtTot);
 
+        h.w = wgt;
+        h.wTot = wgtTot;
 
         h.Fill1D(h.hJetPt, chsJets->at(0).p4.Pt());
 
@@ -182,6 +184,12 @@ void filler(TString input, TString output, int nSplit = 1, int nNow = 0)
             h.Fill3D(h.hRhopuppi, eta, pt, rho);
         }
         //cout << "Init start " <<entry <<" "<< __LINE__ << endl;
+
+
+        set<int> Indx;
+        for(unsigned i = 0; i < testJets->size(); ++i)
+            Indx.insert(i);
+
         for (unsigned i = 0; i < chsJets->size(); ++i) {
             double eta = chsJets->at(i).p4.Eta();
             double pt = chsJets->at(i).p4.Pt();
@@ -195,21 +203,38 @@ void filler(TString input, TString output, int nSplit = 1, int nNow = 0)
 
             if (pt >= jetSel) {
                 h.Fill2D(h.hEtaPtCHS, eta, pt);
+
+                int m = -1;
+                for(int ind :  Indx) {
+                    //cout << ind << endl;
+                    double d2 = dist2(chsJets->at(i).p4, testJets->at(ind).p4);
+                    if(d2 < 0.2*0.2) {
+                        m = ind;
+                        Indx.erase(m);
+                        break;
+                    }
+                }
+                //cout << "CHS jet " << pt << " "<< m << endl;
+                if(m == -1) {
+                    h.Fill2D(h.hEtaPtCHSalone, eta, pt);
+                }
             }
         }
         //cout << "Init start " <<entry <<" "<< __LINE__ << endl;
 
-        set<int> Indx;
+        Indx.clear();
         for(unsigned i = 0; i < chsJets->size(); ++i)
             Indx.insert(i);
 
 
+        //Loop over tested jets and check mathing properties
         for(unsigned i = 0; i < testJets->size(); ++i) {
             double pt   = testJets->at(i).p4.Pt();
-            double Eta = testJets->at(i).p4.Eta();
+            double eta = testJets->at(i).p4.Eta();
             if(pt < jetSel) continue;
 
-            h.Fill2D(h.hEtaPtPUPPI, Eta, pt);
+            //cout << "Filling pupi" << 
+            h.Fill2D(h.hEtaPtPUPPI, eta, pt);
 
             int m = -1;
             for(int ind :  Indx) {
@@ -225,23 +250,25 @@ void filler(TString input, TString output, int nSplit = 1, int nNow = 0)
             if(m != -1) {
                 //cout << "match " << PUPPIjetPt[i] << " "<< PUPPIjetPt[i] / CHSjetPt[m] << endl;
                 double r = testJets->at(i).p4.Pt() / chsJets->at(m).p4.Pt();
-                h.Fill3D(h.hBalEtaPt[0], Eta, pt, r);
+                h.Fill3D(h.hBalEtaPt[0], eta, pt, r);
                 if(rho < 15)
-                    h.Fill3D(h.hBalEtaPt[1], Eta, pt, r);
+                    h.Fill3D(h.hBalEtaPt[1], eta, pt, r);
                 else if(rho < 22)
-                    h.Fill3D(h.hBalEtaPt[2], Eta, pt, r);
+                    h.Fill3D(h.hBalEtaPt[2], eta, pt, r);
                 else if(rho < 30)
-                    h.Fill3D(h.hBalEtaPt[3], Eta, pt, r);
+                    h.Fill3D(h.hBalEtaPt[3], eta, pt, r);
                 else
-                    h.Fill3D(h.hBalEtaPt[4], Eta, pt, r);
+                    h.Fill3D(h.hBalEtaPt[4], eta, pt, r);
 
                 //cout <<"Event " <<  PUPPIjetJEC[i] << " "<< CHSjetJEC[m] << endl;
             }
             else { //not matched
-                h.Fill2D(h.hEtaPtPUPPIalone, Eta, pt);
+                h.Fill2D(h.hEtaPtPUPPIalone, eta, pt);
             }
         }
+
     }
+
     newfile->Write();
     newfile->Close();
 

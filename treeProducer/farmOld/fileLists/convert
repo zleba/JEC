@@ -1,6 +1,0 @@
-DIR=QCD_TuneCUETP8M1_13TeV_pythia8
-for file in $DIR/*.py
-do 
-    grep -o "/store[^']*" $file > ${file}.txt
-done
-rename py.txt txt $DIR/*.txt

@@ -37,6 +37,7 @@ struct PLOTTER {
     vector<TH3D *> hJECchs;
 
     vector<TH2D *> hEtaPtCHS;
+    vector<TH2D *> hEtaPtCHSalone;
     vector<TH2D *> hEtaPtPUPPI;
     vector<TH2D *> hEtaPtPUPPIalone;
 
@@ -62,6 +63,7 @@ struct PLOTTER {
         hJECchs.resize(nPer);
 
         hEtaPtCHS.resize(nPer);
+        hEtaPtCHSalone.resize(nPer);
         hEtaPtPUPPI.resize(nPer);
         hEtaPtPUPPIalone.resize(nPer);
 
@@ -100,6 +102,9 @@ struct PLOTTER {
 
             hEtaPtCHS[i] = dynamic_cast<TH2D*>(fIn->Get(SF("hEtaPtCHS_%c",per)));
             assert(hEtaPtCHS[i]);
+            hEtaPtCHSalone[i] = dynamic_cast<TH2D*>(fIn->Get(SF("hEtaPtCHSalone_%c",per)));
+            assert(hEtaPtCHSalone[i]);
+
             hEtaPtPUPPI[i] = dynamic_cast<TH2D*>(fIn->Get(SF("hEtaPtPUPPI_%c",per)));
             assert(hEtaPtPUPPI[i]);
             hEtaPtPUPPIalone[i] = dynamic_cast<TH2D*>(fIn->Get(SF("hEtaPtPUPPIalone_%c",per)));
@@ -125,7 +130,7 @@ struct PLOTTER {
     vector<double> MeanAsym(int shift=0, TString style="");
     void JEC();
     void PtEtaDep();
-    void Unmatched();
+    void Unmatched(TString type = "tested");
     void MatchingFactorsTimeDep(int rho=0);
     pair<TH1D*,TH1D*>  MatchingFactorsPileUpDep(bool plotFit, TString plotType = "time");
     void  PlotFit(TH1D *h84, TH1D *h1000);
@@ -1139,10 +1144,19 @@ void PLOTTER::PtEtaDep()
     delete can;
 }
 
-void PLOTTER::Unmatched()
+void PLOTTER::Unmatched(TString type = "tested")
 {
-    auto hPUPPI = hEtaPtPUPPI[perID];
-    auto hPUPPIa = hEtaPtPUPPIalone[perID];
+    TH2D* hPUPPI = nullptr;
+    TH2D* hPUPPIa = nullptr;
+
+    if(type == "tested") {
+        hPUPPI = hEtaPtPUPPI[perID];
+        hPUPPIa = hEtaPtPUPPIalone[perID];
+    }
+    else {
+        hPUPPI = hEtaPtCHS[perID];
+        hPUPPIa = hEtaPtCHSalone[perID];
+    }
 
     TCanvas *can = new TCanvas("can", "can", 800, 500);
 
@@ -1184,6 +1198,8 @@ void PLOTTER::Unmatched()
         //hPuppi->Scale(1., "width");
         hPuppiA->Divide(hPuppi);
 
+        hPuppiA->Print("all");
+
         //hChs->Scale(1., "width");
 
         //hPuppiA->SetMinimum(0.00);
@@ -1196,7 +1212,7 @@ void PLOTTER::Unmatched()
         //SetFontSizes(hPuppiA, 0.07);
 
         GetXaxis()->SetRangeUser(34, 1780);
-        GetYaxis()->SetRangeUser(0.0, 0.029);
+        GetYaxis()->SetRangeUser(0.0, 0.129);
         GetYaxis()->SetNdivisions(505);
 
         GetXaxis()->SetMoreLogLabels();
@@ -1213,6 +1229,7 @@ void PLOTTER::Unmatched()
         DrawLatexUp(-1, SF("%1.2f < |#eta| < %1.2f", l, u));
     }
     
+    //exit(0);
     can->Print(outName);
     //can->Print(outName);
     can->Clear();
@@ -2375,6 +2392,7 @@ void plotter()
     plot.perID = 0;
     plot.Unmatched();
     plot.outName = myOut;
+    plot.Unmatched("chs4");
     plot.PlotProfiles(0, -1);
     plot.PlotProfiles(1, -1);
     plot.PlotProfiles(2, -1);

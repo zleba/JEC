@@ -4,10 +4,11 @@
 #nProc = 19
 #tmpDir = '/tmp'
 import os
-tmpDir = '/nfs/dust/cms/user/'+os.environ["USER"]+ '/tmp/'
+from subprocess import check_output
+#tmpDir = '/nfs/dust/cms/user/'+os.environ["USER"]+ '/tmp/'
+tmpDir = check_output(["getTempDir"]).rstrip()
 
 def setEnv(cmd, exDir):
-    from subprocess import check_output
     myEx   = check_output(["which", cmd]).rstrip()
     myLibs = check_output("ldd  " +  myEx + " | grep $CMSSW_BASE | awk '{print $3}'" , shell=True).splitlines()
     print "Patrick", myLibs
@@ -39,7 +40,7 @@ def parallel(cmd, In, Out, nProc=0, *argv):
     from subprocess import Popen, call 
     import os.path
     from random import randint
-    tag = 'dasParallel_'+ cmd + str(randint(1, 10000000))
+    tag = 'Parallel_'+ cmd + str(randint(1, 10000000))
     outDir = tmpDir + '/' + tag
     os.mkdir(outDir)
     myEnv = setEnv(cmd,outDir)

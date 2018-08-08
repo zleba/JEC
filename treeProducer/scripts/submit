@@ -1,8 +1,5 @@
 #!/bin/zsh
 
-echo  ${1:-j}
-exit
-
 export DASCMD=$1
 export DASSRC=`readlink -ne $2`
 export DASDEST=`readlink -nf $3`
@@ -11,7 +8,8 @@ export DASARGS="`echo $@[4,$#]`"
 
 # create a temporary directory
 dirName=`date +%Y%m%d%H%M%S%N`_${DASCMD}
-nafTmp=/nfs/dust/cms/user/${USER}/tmp/$dirName
+nafTmp=`getTempDir`/$dirName
+echo $nafTmp
 mkdir -p $nafTmp/out $nafTmp/logs
 
 # copy the executable (fire-and-forget strategy)

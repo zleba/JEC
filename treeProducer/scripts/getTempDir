@@ -1,0 +1,2 @@
+#!/bin/sh
+echo /nfs/dust/cms/user/${USER}/tmp
