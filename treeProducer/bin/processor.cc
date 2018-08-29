@@ -12,6 +12,9 @@
 #include "JEC.h"
 #include "lumi.h"
 
+#include "fastjet/PseudoJet.hh"
+#include "fastjet/ClusterSequence.hh"
+
 
 using namespace std::experimental::filesystem;
 using namespace std;
@@ -28,19 +31,19 @@ JECs * GetDataJEC (int runNo, string jetType)
 
     if (jecMapCHS4.count(per) == 0) {
         if ('B' <= per  && per <= 'D') {
-            jecMapCHS4[per]   = new JECs("Summer16_07Aug2017BCD_V11_DATA", "AK4PFchs");
-            jecMapCHS8[per]   = new JECs("Summer16_07Aug2017BCD_V11_DATA", "AK8PFchs");
-            jecMapPUPPI4[per] = new JECs("Summer16_07Aug2017BCD_V11_DATA", "AK4PFPuppi");
+            jecMapCHS4[per]   = new JECs("Summer16_07Aug2017BCD_V14_DATA", "AK4PFchs");
+            jecMapCHS8[per]   = new JECs("Summer16_07Aug2017BCD_V14_DATA", "AK8PFchs");
+            jecMapPUPPI4[per] = new JECs("Summer16_07Aug2017BCD_V14_DATA", "AK4PFPuppi");
         }
         else if ('E' <= per  && per <= 'F') {
-            jecMapCHS4[per]   = new JECs("Summer16_07Aug2017EF_V11_DATA", "AK4PFchs");
-            jecMapCHS8[per]   = new JECs("Summer16_07Aug2017EF_V11_DATA", "AK8PFchs");
-            jecMapPUPPI4[per] = new JECs("Summer16_07Aug2017EF_V11_DATA", "AK4PFPuppi");
+            jecMapCHS4[per]   = new JECs("Summer16_07Aug2017EF_V14_DATA", "AK4PFchs");
+            jecMapCHS8[per]   = new JECs("Summer16_07Aug2017EF_V14_DATA", "AK8PFchs");
+            jecMapPUPPI4[per] = new JECs("Summer16_07Aug2017EF_V14_DATA", "AK4PFPuppi");
         }
         else if('G' <= per  && per <= 'H') {
-            jecMapCHS4[per]   = new JECs("Summer16_07Aug2017GH_V11_DATA", "AK4PFchs");
-            jecMapCHS8[per]   = new JECs("Summer16_07Aug2017GH_V11_DATA", "AK8PFchs");
-            jecMapPUPPI4[per] = new JECs("Summer16_07Aug2017GH_V11_DATA", "AK4PFPuppi");
+            jecMapCHS4[per]   = new JECs("Summer16_07Aug2017GH_V14_DATA", "AK4PFchs");
+            jecMapCHS8[per]   = new JECs("Summer16_07Aug2017GH_V14_DATA", "AK8PFchs");
+            jecMapPUPPI4[per] = new JECs("Summer16_07Aug2017GH_V14_DATA", "AK4PFPuppi");
         }
         else {
             cout << "Wrong period "<< per  << endl;
@@ -72,6 +75,43 @@ void ApplyJEC (int runNo, double rho, vector<QCDjet> & jets, string jetType)
         jet.p4.Scale(corr);
     }
     sort(jets.begin(), jets.end(), [](QCDjet &a, QCDjet &b) {return a.p4.Pt() > b.p4.Pt();});
+}
+
+
+//Merge ak4 jets into ak8 jets
+vector<QCDjet> MergeJets (const vector<QCDjet> & jetsAK4)
+{
+    // Fastjet analysis - select algorithm and parameters
+    double Rparam = 0.8;
+    fastjet::Strategy               strategy = fastjet::Best;
+    fastjet::RecombinationScheme    recombScheme = fastjet::E_scheme;
+    fastjet::JetDefinition         *jetDef = NULL;
+    jetDef = new fastjet::JetDefinition(fastjet::kt_algorithm, Rparam,
+            recombScheme, strategy);
+
+    // Fastjet input
+    std::vector <fastjet::PseudoJet> fjInputs;
+    for (const auto & jet : jetsAK4) { 
+        fjInputs.push_back( fastjet::PseudoJet( jet.p4.Px(), jet.p4.Py(), jet.p4.Pz(), jet.p4.E() ));
+    }
+
+    vector <fastjet::PseudoJet> inclusiveJets;
+    fastjet::ClusterSequence clustSeq(fjInputs, *jetDef);
+
+
+    inclusiveJets = clustSeq.inclusive_jets(20.0);
+
+    vector<QCDjet>  jetsAK8; //Ak8 like jets
+    
+    for (const auto & jet : inclusiveJets) {
+        QCDjet newJet;
+        newJet.p4 = ROOT::Math::PtEtaPhiM4D<float>(jet.perp(), jet.eta(), jet.phi(), jet.m());
+        jetsAK8.push_back(newJet);
+    }
+
+    sort(jetsAK8.begin(), jetsAK8.end(), [](QCDjet &a, QCDjet &b) {return a.p4.Pt() > b.p4.Pt();});
+
+    return jetsAK8;
 }
 
 
@@ -123,7 +163,10 @@ void procesor (TString input, TString output, int nSplit = 1, int nNow = 0)
         ApplyJEC(runNo, rho, *chs8Jets,   "AK8PFchs");
         ApplyJEC(runNo, rho, *puppi4Jets, "AK4PFPuppi");
 
-        //if(chs8Jets->size() > 0) cout << "TEST2 " << chs8Jets->at(0).p4.Pt() << endl;
+
+        //*chs4Jets = MergeJets(*chs4Jets);
+
+
 
         //For use in probe+tag method at least two jets are needed
         if(chs4Jets->size() < 2) continue;

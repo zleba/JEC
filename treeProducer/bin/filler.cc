@@ -10,6 +10,11 @@
 using namespace std;
 
 
+//TString aType = "AK8";
+TString aType = "PUPPI";
+
+const double Rm = (aType == "AK8") ?  0.4 : 0.2;
+
 
 //double dist2(double eta1, double phi1, double eta2, double phi2)
 double dist2(const ROOT::Math::PtEtaPhiM4D<float> &j1, const ROOT::Math::PtEtaPhiM4D<float> &j2)
@@ -48,7 +53,7 @@ void DoMikkoMatching(int runNo, vector<QCDjet> *chsJets, vector<QCDjet> *testJet
     int m = -1;
     for(int j = 0; j < (int) testJets->size(); ++j) {
         double d2 = dist2(testJets->at(j).p4, CHSprobe);
-        if(d2 < 0.2*0.2) {
+        if(d2 < Rm*Rm) {
             m = j;
             break;
         }
@@ -59,7 +64,7 @@ void DoMikkoMatching(int runNo, vector<QCDjet> *chsJets, vector<QCDjet> *testJet
     m = -1;
     for(int j = 0; j < (int)testJets->size(); ++j) {
         double d2 = dist2(testJets->at(j).p4, CHStag);
-        if(d2 < 0.2*0.2) {
+        if(d2 < Rm*Rm) {
             m = j;
             break;
         }
@@ -141,8 +146,14 @@ void filler(TString input, TString output, int nSplit = 1, int nNow = 0)
     oldchain->SetBranchAddress("wgt", &wgt);
     oldchain->SetBranchAddress("wgtTot", &wgtTot);
     //oldchain->SetBranchAddress("triggerBit", &triggerBit);
-    oldchain->SetBranchAddress("chs4Jets", &chsJets);
-    oldchain->SetBranchAddress("chs8Jets", &testJets);
+    oldchain->SetBranchAddress("chs4Jets", &chsJets); //merged ak4jets
+
+    if(aType == "AK8")
+        oldchain->SetBranchAddress("chs8Jets", &testJets);
+    else if(aType == "PUPPI")
+        oldchain->SetBranchAddress("puppi4Jets", &testJets);
+    else
+        assert(0);
 
     TFile *newfile = TFile::Open(output, "RECREATE");
     h.Init();
@@ -208,7 +219,7 @@ void filler(TString input, TString output, int nSplit = 1, int nNow = 0)
                 for(int ind :  Indx) {
                     //cout << ind << endl;
                     double d2 = dist2(chsJets->at(i).p4, testJets->at(ind).p4);
-                    if(d2 < 0.2*0.2) {
+                    if(d2 < Rm*Rm) {
                         m = ind;
                         Indx.erase(m);
                         break;
@@ -240,7 +251,7 @@ void filler(TString input, TString output, int nSplit = 1, int nNow = 0)
             for(int ind :  Indx) {
                 //cout << ind << endl;
                 double d2 = dist2(testJets->at(i).p4, chsJets->at(ind).p4);
-                if(d2 < 0.2*0.2) {
+                if(d2 < Rm*Rm) {
                     m = ind;
                     Indx.erase(m);
                     break;

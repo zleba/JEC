@@ -22,6 +22,9 @@ using namespace PlottingHelper;
 
 double polFun(double pt, double y, const double *x);
 
+//TString jTest = "AK8";
+TString jTest = "PUPPI";
+TString jRef = (jTest == "AK8") ? "CHS4c" : "CHS4";
 
 struct PLOTTER {
 
@@ -130,7 +133,7 @@ struct PLOTTER {
     vector<double> MeanAsym(int shift=0, TString style="");
     void JEC();
     void PtEtaDep();
-    void Unmatched(TString type = "tested");
+    void Unmatched(TString type = "tested", TString dir = "pos");
     void MatchingFactorsTimeDep(int rho=0);
     pair<TH1D*,TH1D*>  MatchingFactorsPileUpDep(bool plotFit, TString plotType = "time");
     void  PlotFit(TH1D *h84, TH1D *h1000);
@@ -224,7 +227,7 @@ void PLOTTER::PlotProfiles(int type, int per, bool doSigma = false)
         }
         else {
             if(type == 2 || type == 10)
-                GetYaxis()->SetRangeUser(0.91, 1.09);
+                GetYaxis()->SetRangeUser(0.91, 1.19);
             else if(type == 4 || type == 5 || type == 6)
                 GetYaxis()->SetRangeUser(0.951, 1.09);
             else
@@ -253,34 +256,34 @@ void PLOTTER::PlotProfiles(int type, int per, bool doSigma = false)
                 if(type == 3) DrawLatexLeft(4.4, "(p_{T}^{PUPPI}(probe) - p_{T}^{CHS})/ p_{T}^{CHS}", -1, "t>");
                 else if(type == 7) DrawLatexLeft(4.4, "(p_{T}^{CHS}(probe) - p_{T}^{CHS})/ p_{T}^{CHS}", -1, "t>");
 
-                else if(type == 8) DrawLatexLeft(4.4, "(p_{T}^{CHS} - #bar{p}_{T}^{PUPPI})/ #bar{p}_{T}^{PUPPI}", -1, "t>");
-                else if(type == 9) DrawLatexLeft(4.4, "(p_{T}^{PUPPI} - #bar{p}_{T}^{CHS})/ #bar{p}_{T}^{CHS}", -1, "t>");
+                else if(type == 8) DrawLatexLeft(4.4, "(p_{T}^{CHS} - #bar{p}_{T}^{PUPPI})/ #bar{p}_{T}^{"+jTest+"}", -1, "t>");
+                else if(type == 9) DrawLatexLeft(4.4, "(p_{T}^{"+jTest+"} - #bar{p}_{T}^{CHS})/ #bar{p}_{T}^{CHS}", -1, "t>");
 
             }
             else {
-                if(type == 3)      DrawLatexLeft(4.4, "#LT p_{T}^{PUPPI} (probe) #GT [GeV]", -1, "t>");
-                else if(type == 7) DrawLatexLeft(4.4, "#LT p_{T}^{CHS} (probe) #GT [GeV]", -1, "t>");
-                else if(type == 0) DrawLatexLeft(4.4, "#LT p_{T}^{PUPPI} (probe) / p_{T}^{CHS} (tag) #GT", -1, "t>");
-                else if(type == 1) DrawLatexLeft(4.4, "#LT p_{T}^{CHS} (probe) / p_{T}^{CHS} (tag) #GT", -1, "t>");
+                if(type == 3)      DrawLatexLeft(4.4, "#LT p_{T}^{"+jTest+"} (probe) #GT [GeV]", -1, "t>");
+                else if(type == 7) DrawLatexLeft(4.4, "#LT p_{T}^{"+jRef+"} (probe) #GT [GeV]", -1, "t>");
+                else if(type == 0) DrawLatexLeft(4.4, "#LT p_{T}^{"+jTest+"} (probe) / p_{T}^{"+jRef+"} (tag) #GT", -1, "t>");
+                else if(type == 1) DrawLatexLeft(4.4, "#LT p_{T}^{"+jRef+"} (probe) / p_{T}^{"+jRef+"} (tag) #GT", -1, "t>");
                 else if(type == 2 || type == 4 || type == 5 || type == 6 || type == 10)
-                                   DrawLatexLeft(4.4, "#LT p_{T}^{PUPPI} (probe) / p_{T}^{CHS} (probe) #GT", -1, "t>");
+                                   DrawLatexLeft(4.4, "#LT p_{T}^{"+jTest+"} (probe) / p_{T}^{"+jRef+"} (probe) #GT", -1, "t>");
             }
         }
         if(i == 42) {
             //GetXaxis()->SetTitle("p_{Ttag}^{CHS} [GeV]");
             if(type == 4)
-                DrawLatexDown(3.0, "p_{T}^{PUPPI} (probe) [GeV]", -1, "r");
+                DrawLatexDown(3.0, "p_{T}^{"+jTest+"} (probe) [GeV]", -1, "r");
             else if(type == 5)
                 DrawLatexDown(3.0, "p_{T}^{CHS} (probe) [GeV]", -1, "r");
             else if(type == 6)
-                DrawLatexDown(3.0, "#sqrt{p_{T}^{CHS} p_{T}^{PUPPI}} (probe) [GeV]", -1, "r");
+                DrawLatexDown(3.0, "#sqrt{p_{T}^{CHS} p_{T}^{"+jTest+"}} (probe) [GeV]", -1, "r");
 
-            else if(type == 8) DrawLatexDown(3.0, "p_{T}^{PUPPI} [GeV]", -1, "r");
+            else if(type == 8) DrawLatexDown(3.0, "p_{T}^{"+jTest+"} [GeV]", -1, "r");
             else if(type == 9) DrawLatexDown(3.0, "p_{T}^{CHS} [GeV]", -1, "r");
-            else if(type == 10) DrawLatexDown(3.0, "p_{T}^{PUPPI} (tag) [GeV]", -1, "r");
+            else if(type == 10) DrawLatexDown(3.0, "p_{T}^{"+jTest+"} (tag) [GeV]", -1, "r");
 
             else
-                DrawLatexDown(3.0, "p_{T}^{CHS} (tag) [GeV]", -1, "r");
+                DrawLatexDown(3.0, "p_{T}^{"+jRef+"} (tag) [GeV]", -1, "r");
 
         }
 
@@ -352,7 +355,6 @@ void PLOTTER::CompareSigmas()
                 double c3 = profBB3->GetBinCenter(k);
                 double r =  profBB7->GetBinError(k) !=  0  ?  profBB3->GetBinError(k) /  profBB7->GetBinError(k)  : 0;
                 myHist->SetBinContent(k, r );
-                //cout << "HELENKA " << k <<" "<< r << endl;
             }
             
             myHist->SetLineColor(kRed);
@@ -451,7 +453,6 @@ void PLOTTER::PlotVar1overVar2()
         for(int k = 1; k < profP->GetNbinsX(); ++k) {
             double rP = profBB2->GetBinContent(k) != 0 ?  profBB1->GetBinContent(k) /  profBB2->GetBinContent(k) : 0;
             double rN = NprofBB2->GetBinContent(k) != 0 ?  NprofBB1->GetBinContent(k) /  NprofBB2->GetBinContent(k) : 0;
-            cout << "RADECEK " << rP << endl;
             profP->SetBinContent(k, rP);
             profP->SetBinError(k, 0);
             profN->SetBinContent(k, rN);
@@ -608,6 +609,8 @@ void PLOTTER::PlotProfilesOverlap()
 
 pair<TGraphErrors*, TGraphErrors*> GetMikkoCorr(vector<TProfile2D*> *hProf, int i)
 {
+    assert(hProf[3][0]->GetNbinsX() == 84);
+    //cout << "Kacenka " << hProf[3][0]->GetNbinsX() << " "<< hProf[3][0]->GetNbinsY() << endl;
     TProfile  *prof[4];
     for(int type = 0; type < 4; ++type)
         prof[type] = hProf[type][0]->ProfileY(SF("profName%d%d",type, rand()), i, i, "i");
@@ -626,6 +629,11 @@ pair<TGraphErrors*, TGraphErrors*> GetMikkoCorr(vector<TProfile2D*> *hProf, int 
         gr1->SetPoint(k-1, v4, r); 
         gr1->SetPointError(k-1, e4, e3); 
 
+        //if(i == 42) {
+            cout << "Kukacka " <<i<<" "<< v4 <<" "<<  r << endl;
+        //}
+
+
         gr2->SetPoint(k-1, v4, v3); 
         gr2->SetPointError(k-1, e4, e3); 
         //cout << k << " " << v4 << " "<< r << endl;
@@ -641,6 +649,9 @@ void CleanGraph(TGraphErrors *gr)
     for(int i = 0; i < gr->GetN(); ++i) {
         double x, y;
         gr->GetPoint(i, x, y);
+
+        if(jTest == "AK8" &&  x < 240) continue;
+
         if(x < xOrg) {
             iLast = i;
             break;
@@ -654,6 +665,36 @@ void CleanGraph(TGraphErrors *gr)
         //cout << "Cleaning " << i << endl;
         gr->RemovePoint(i);
     }
+
+    if(jTest == "AK8") {
+        xOrg = 30000;
+        iLast = 0;
+        for(int i = gr->GetN() - 1;  i >= 0; --i) {
+            double x, y;
+            gr->GetPoint(i, x, y);
+            if(x > xOrg) {
+                iLast = i;
+                break;
+            }
+            xOrg = x;
+        }
+        iLast = min(0, iLast);
+        //cout << "Old Npoints " << gr->GetN() << endl;
+
+        for(int i = 0; i <= iLast; ++i) {
+            //cout << "Cleaning " << i << endl;
+            gr->RemovePoint(0);
+        }
+
+        for(int i = 0; i < gr->GetN(); ++i) {
+            double x, y;
+            gr->GetPoint(i, x, y);
+            if(abs(y - 0.96) < 0.01 && abs(x - 1800) < 200)
+                gr->RemovePoint(i);
+        }
+
+    }
+
     //cout << "New Npoints " << gr->GetN() << endl;
 }
 
@@ -689,7 +730,6 @@ pair<TH1D*,TH1D*> PLOTTER::PlottMatchingCorr(int direction, bool doFit = true)
 
         can->cd(i);
 
-        cout << "Helenka " << __LINE__ << endl;
         TGraphErrors *gr1, *gr2;
         tie(gr1, gr2) = GetMikkoCorr(hProf, ii);
         TGraphErrors *gr1BB, *gr2BB;
@@ -702,7 +742,7 @@ pair<TH1D*,TH1D*> PLOTTER::PlottMatchingCorr(int direction, bool doFit = true)
 
         profOrg->Draw("hist");
 
-        cout << "Helenka " << __LINE__ << endl;
+        
         CleanGraph(gr1BB);
         //gr1->Draw("pe");
         gr1BB->SetLineColor(kBlack);
@@ -712,10 +752,9 @@ pair<TH1D*,TH1D*> PLOTTER::PlottMatchingCorr(int direction, bool doFit = true)
         GetXaxis()->SetRangeUser(74, 2000);
         //GetXaxis()->SetMoreLogLabels();
         GetYaxis()->SetMoreLogLabels();
-        GetYaxis()->SetRangeUser(0.951, 1.19);
+        GetYaxis()->SetRangeUser(0.951, 1.09);
         gPad->SetLogx();
 
-        cout << "Helenka " << __LINE__ << endl;
         GetYaxis()->SetNdivisions(505);
 
         SetFTO({12}, {5.1}, {1.63, 3.0, 0.3, 4.4});
@@ -723,10 +762,10 @@ pair<TH1D*,TH1D*> PLOTTER::PlottMatchingCorr(int direction, bool doFit = true)
         GetFrame()->SetTitle("");
         if(i == 1) {
             //GetYaxis()->SetTitle("#LT p_{T}^{PUPPI}#GT/#LT p_{T}^{CHS}#GT");
-            DrawLatexLeft(4.4, "#LT p_{T}^{PUPPI}#GT/#LT p_{T}^{CHS}#GT", -1, "t>");
+            DrawLatexLeft(4.4, "#LT p_{T}^{"+jTest+"}#GT/#LT p_{T}^{CHS}#GT", -1, "t>");
         }
         if(i == 42) {
-            GetXaxis()->SetTitle("p_{T}^{PUPPI} [GeV]");
+            GetXaxis()->SetTitle("p_{T}^{"+jTest+"} [GeV]");
 
             TLegend *leg = new TLegend(0.1, 0.5, 0.65, 0.85);
             leg->SetBorderSize(0);
@@ -736,47 +775,51 @@ pair<TH1D*,TH1D*> PLOTTER::PlottMatchingCorr(int direction, bool doFit = true)
             leg->Draw();
         }
 
-        cout << "Helenka " << __LINE__ << endl;
 
 
         double l = hBalEtaPtAll[0][0]->GetXaxis()->GetBinLowEdge(ii);
         double u = hBalEtaPtAll[0][0]->GetXaxis()->GetBinUpEdge(ii);
         double c = hBalEtaPtAll[0][0]->GetXaxis()->GetBinCenter(ii);
 
-        cout << "Helenka " << __LINE__ << endl;
 
         /////////////////////////////////////////////////////////////
         double y = hBalEtaPtAll[0][0]->GetXaxis()->GetBinCenter(ii);
         cout << "my y " << y << endl;
-        TF1 *fun = new TF1(SF("fun%d",rand()), "[0] + [1]*log(x/84)", 84, 2000);
+
+
+        double minPt = 84;
+        double maxPtFit = 1000;//500
+        if(jTest == "AK8") {
+            minPt = 220;
+            maxPtFit = 2000;
+        }
+
+        TF1 *fun = new TF1(SF("fun%d",rand()), "[0] + [1]*log(x/84)", minPt, 2000);
         fun->SetParameter(0, 1);
         fun->SetParameter(1, 0);
         if(doFit && 1) {
             double maxPt = 0;
-            cout << "Helenka " << __LINE__ << endl;
             for(int i = 0; i <= gr1BB->GetN(); ++i) {
                 double x, y;
                 gr1BB->GetPoint(i, x, y);
                 maxPt = max(maxPt, x);
             }
-            double maxPtNow = std::min(500.0, maxPt);
-            if(maxPtNow > 84) {
-                cout << "Helenka " << __LINE__ << endl;
+            double maxPtNow = std::min(maxPtFit, maxPt);
+            if(maxPtNow > minPt) {
 
-                gr1BB->Fit(fun, "", "", 84, maxPtNow);
+                gr1BB->Fit(fun, "", "", minPt, maxPtNow);
                 cout << "HuHu " << 84 << " "<< maxPtNow << endl;
-                fun->DrawF1(84, maxPtNow, "l same");
+                fun->DrawF1(minPt, maxPtNow, "l same");
                 TF1 *fun2 = (TF1*) fun->Clone(SF("fun2_%d",i));
                 fun2->SetLineColor(kGreen);
                 if(maxPt > maxPtNow)
                     fun2->DrawF1(maxPtNow, maxPt,  "l same");
 
-                cout << "Helenka " << __LINE__ << endl;
 
 
                 double yMin = hBalEtaPtAll[0][0]->GetXaxis()->GetBinLowEdge(ii);
                 double yMax = hBalEtaPtAll[0][0]->GetXaxis()->GetBinUpEdge(ii);
-                cout << "Radek "<<  yMin << " " << yMax <<
+                cout << "FITRESULT "<<  yMin << " " << yMax <<
                     " 84 "<< maxPt<<" 84 "<< maxPtNow<<" "<< /*round(6500/cosh(yMin))<<" "<<*/ round(100000*fun->GetParameter(0))/100000. <<" "<< round(100000*fun->GetParameter(1))/100000. << endl;
 
 
@@ -798,14 +841,12 @@ pair<TH1D*,TH1D*> PLOTTER::PlottMatchingCorr(int direction, bool doFit = true)
                     ss1000 += pow(fun->Eval(1000),2);
                 }
                 fun->SetParameters(p0, p1);
-                cout << "Helenka " << __LINE__ << endl;
 
                 //cout << "HEL84 " << ss84/ << 
                 double e84   = sqrt(ss84/N - pow(s84/N,2));
                 double e1000 = sqrt(ss1000/N - pow(s1000/N,2));
                 cout <<"HELAX "<< e84 <<" "<< e1000 << endl;
 
-                cout << "Helenka " << __LINE__ << endl;
 
                 int iBin = hFit84->FindBin(abs(c));
                 if(maxPtNow > 84 && abs(c) < 4.4) {
@@ -817,22 +858,17 @@ pair<TH1D*,TH1D*> PLOTTER::PlottMatchingCorr(int direction, bool doFit = true)
 
             }
 
-            cout << "Helenka " << __LINE__ << endl;
 
         }
 
 
-        cout << "Helenka " << __LINE__ <<" "<< l <<" "<< u<< endl;
         DrawLatexUp(-1, SF("%1.2f < #eta < %1.2f", l, u));
 
-        cout << "Helenka " << __LINE__ << endl;
 
 
     }
 
-        cout << "Helenka " << __LINE__ << endl;
     can->Print(outName);
-        cout << "Helenka " << __LINE__ << endl;
     can->Clear();
     delete can;
     return make_pair(hFit84, hFit1000);
@@ -899,14 +935,14 @@ void  PLOTTER::PlotFitFour(TH1D *h84p, TH1D *h1000p, TH1D *h84n, TH1D *h1000n)
 
     GetYaxis()->SetRangeUser(0.92, 1.08);
     GetXaxis()->SetRangeUser(0.0, 4.35);
-    GetYaxis()->SetTitle("p_{T}^{PUPPI}/p_{T}^{CHS} Correction");
+    GetYaxis()->SetTitle("p_{T}^{"+jTest+"}/p_{T}^{CHS} Correction");
     GetXaxis()->SetTitle("|#eta|");
     GetFrame()->SetTitle("");
 
     TLegend *leg = new TLegend(0.2, 0.15, 0.5, 0.4);
     leg->SetBorderSize(0);
     leg->SetTextSize(GetXaxis()->GetTitleSize());
-    leg->AddEntry((TObject*)nullptr, "The PUPPI/CHS", "h");
+    leg->AddEntry((TObject*)nullptr, "The "+jTest+"/CHS", "h");
     leg->AddEntry((TObject*)nullptr, "matching corrections", "h");
     leg->AddEntry((TObject*)nullptr, "(logLin fit)", "h");
     //leg->AddEntry(h84p, "p_{T}^{PUPPI} = 84 GeV", "l");
@@ -914,17 +950,17 @@ void  PLOTTER::PlotFitFour(TH1D *h84p, TH1D *h1000p, TH1D *h84n, TH1D *h1000n)
     leg->Draw();
 
 
-    TLegend *leg2 = new TLegend(0.2, 0.65, 0.7, 0.8);
+    TLegend *leg2 = new TLegend(0.2, 0.75, 0.7, 0.87);
     leg2->SetBorderSize(0);
     leg2->SetTextSize(0.7*GetXaxis()->GetTitleSize());
     leg2->SetNColumns(2);
     leg2->AddEntry((TObject*)nullptr, "pos", "");
     leg2->AddEntry((TObject*)nullptr, "neg", "");
 
-    leg2->AddEntry(h84p, "p_{T}^{PUPPI} = 84 GeV", "l");
-    leg2->AddEntry(h84n, "p_{T}^{PUPPI} = 84 GeV", "l");
-    leg2->AddEntry(h1000p, "p_{T}^{PUPPI} = 1000 GeV", "l");
-    leg2->AddEntry(h1000n, "p_{T}^{PUPPI} = 1000 GeV", "l");
+    leg2->AddEntry(h84p, "p_{T}^{"+jTest+"} = 84 GeV", "l");
+    leg2->AddEntry(h84n, "p_{T}^{"+jTest+"} = 84 GeV", "l");
+    leg2->AddEntry(h1000p, "p_{T}^{"+jTest+"} = 1000 GeV", "l");
+    leg2->AddEntry(h1000n, "p_{T}^{"+jTest+"} = 1000 GeV", "l");
     leg2->Draw();
 
 
@@ -1017,10 +1053,8 @@ void PLOTTER::JEC()
         double lEt = hJECp->GetXaxis()->GetBinLowEdge(iS);
         double uEt = hJECp->GetXaxis()->GetBinUpEdge(iE);
 
-        //cout << "RADEK " << j <<" "<< lPt << " "<< endl;
 
         //hBoth->SetTitle(SF("#splitline{%3.0f < p_{T} < %3.0f}{%1.1f < #eta < %1.1f}", lPt, uPt, lEt, uEt));
-        //cout << "RADEKT " << SF("%3.0f < p_{T} < %3.0f     %1.1f < #eta < %1.1f", lPt, uPt, lEt, uEt) << endl;
         hChs->SetTitle(SF("%3.0f < p_{T} < %3.0f     %1.1f < #eta < %1.1f", lPt, uPt, lEt, uEt));
 
         hChs->GetXaxis()->SetTitle("p_{T}^{PUPPI} / p_{T}^{CHS}");
@@ -1089,7 +1123,6 @@ void PLOTTER::PtEtaDep()
 
         double l = hPUPPI->GetXaxis()->GetBinLowEdge(iS);
         double u = hPUPPI->GetXaxis()->GetBinUpEdge(iE);
-        //cout <<"Helenka " << l <<" "<< u << endl;
         hPuppiA->SetLineColor(kBlack);
         hChs->SetLineColor(kRed);
 
@@ -1144,7 +1177,7 @@ void PLOTTER::PtEtaDep()
     delete can;
 }
 
-void PLOTTER::Unmatched(TString type = "tested")
+void PLOTTER::Unmatched(TString type = "tested", TString dir = "pos")
 {
     TH2D* hPUPPI = nullptr;
     TH2D* hPUPPIa = nullptr;
@@ -1179,8 +1212,16 @@ void PLOTTER::Unmatched(TString type = "tested")
         gPad->SetLogx();
         //gPad->SetLogy();
         //if(i >= 19) continue;
-        int iS = 1*i ;
-        int iE = 1*(i+1) -1 ;
+        int iS, iE;
+        if(dir == "pos") {
+            iS = 1*i  + 42;
+            iE = 1*(i+1) -1 + 42;
+        }
+        else {
+            iS = 1*i  + 0;
+            iE = 1*(i+1) -1 + 0;
+        }
+
         TH1D *hRef   = hPUPPI->ProjectionY(SF("ProjEta%d%d",i,rand()),  iS, iE);
         TH1D *hPuppi = hPUPPI->ProjectionY(SF("ProjEta%d%d",i,rand()),  iS, iE);
         TH1D *hPuppiA = hPUPPIa->ProjectionY(SF("ProjEtaAll%d%d",i,rand()),  iS, iE);
@@ -1189,7 +1230,6 @@ void PLOTTER::Unmatched(TString type = "tested")
 
         double l = hPUPPI->GetXaxis()->GetBinLowEdge(iS);
         double u = hPUPPI->GetXaxis()->GetBinUpEdge(iE);
-        //cout <<"Helenka " << l <<" "<< u << endl;
         hPuppiA->SetLineColor(kBlack);
 
         //hPuppi->SetMaximum(1.2*hPUPPI->GetMaximum());
@@ -1212,7 +1252,7 @@ void PLOTTER::Unmatched(TString type = "tested")
         //SetFontSizes(hPuppiA, 0.07);
 
         GetXaxis()->SetRangeUser(34, 1780);
-        GetYaxis()->SetRangeUser(0.0, 0.129);
+        GetYaxis()->SetRangeUser(0.0, 0.079);
         GetYaxis()->SetNdivisions(505);
 
         GetXaxis()->SetMoreLogLabels();
@@ -1221,12 +1261,20 @@ void PLOTTER::Unmatched(TString type = "tested")
         SetFTO({12}, {5.1}, {1.63, 3.0, 0.3, 5.4});
 
         GetFrame()->SetTitle("");
-        if(i == 1)
-            GetYaxis()->SetTitle("#sigma^{unmatched}_{PUPI}/#sigma_{PUPPI}");
-        if(i == 42)
-            GetXaxis()->SetTitle("p_{T}^{PUPPI} [GeV]");
+        if(i == 1) {
+            TString title = "";
+            if(type == "tested")
+                title = "#sigma^{unmat.}_{"+jTest+"}/#sigma_{"+jTest+"}";
+            else
+                title = "#sigma^{unmat.}_{"+jRef+"}/#sigma_{"+jRef+"}";
+            DrawLatexLeft(4.4, title, -1, "t>");
+        }
+        if(i == 42) {
+            if(type == "tested") GetXaxis()->SetTitle("p_{T}^{"+jTest+"} [GeV]");
+            else GetXaxis()->SetTitle("p_{T}^{"+jRef+"} [GeV]");
+        }
 
-        DrawLatexUp(-1, SF("%1.2f < |#eta| < %1.2f", l, u));
+        DrawLatexUp(-1, SF("%1.2f < #eta < %1.2f", l, u));
     }
     
     //exit(0);
@@ -1448,7 +1496,7 @@ pair<TH1D*,TH1D*> PLOTTER::MatchingFactorsPileUpDep(bool plotFit, TString plotTy
 
             double yMin = hBalEtaPt->GetXaxis()->GetBinLowEdge(iS);
             double yMax = hBalEtaPt->GetXaxis()->GetBinUpEdge(iS);
-            cout << "Radek "<<  yMin << " " << yMax <<
+            cout << "FITRESULT "<<  yMin << " " << yMax <<
                     " 84 "<< maxPtNow <<" "<< maxPt <<" "<< round(6500/cosh(yMin))<<" "<< round(1000*fun->GetParameter(0))/1000. <<" "<< round(1000*fun->GetParameter(1))/1000. << endl;
 
             int iBin = hFit84->FindBin(y);
@@ -2353,12 +2401,16 @@ void plotter()
     //plot.Init("histos/V7V7newBinning.root", myOut+"(");
 
     //TString nTag = "profilesCentralBB";
-    TString nTag = "newAsym4ak8";
-
+    TString nTag = "puppi";
 
     TString myOut = "plots/"+nTag+".pdf";
     //plot.Init("histos/V11V11newBinning.root", myOut+"(");
-    plot.Init("/nfs/dust/cms/user/zlebcr/JEC/ntuplesTemp/histos/histo4AK8CHS.root", myOut+"(");
+
+
+    if(jTest == "AK8")
+        plot.Init("/nfs/dust/cms/user/zlebcr/JEC/ntuplesTemp/histos/histo4AK8CHSnewJEC.root", myOut+"(");
+    else
+        plot.Init("/nfs/dust/cms/user/zlebcr/JEC/ntuplesTemp/histos/histoPuppi.root", myOut+"(");
 
 
     //plot.Init("histos/Summer16_07Aug2017V5__Summer16_07Aug2017V5noResNew.root", myOut+"(");
@@ -2390,9 +2442,13 @@ void plotter()
     //return;
 
     plot.perID = 0;
-    plot.Unmatched();
+    plot.Unmatched();       //AK8 alone without AK4 matched
     plot.outName = myOut;
-    plot.Unmatched("chs4");
+    plot.Unmatched("chs4"); //AK4 alone without AK8 matched
+
+    //plot.Unmatched("tested", "neg"); //AK8 alone without AK4 matched
+    //plot.Unmatched("chs4", "neg"); //AK4 alone without AK8 matched
+
     plot.PlotProfiles(0, -1);
     plot.PlotProfiles(1, -1);
     plot.PlotProfiles(2, -1);

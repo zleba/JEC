@@ -10,7 +10,8 @@
 using namespace edm;
 using namespace std;
 
-static const string JECpath = "/nfs/dust/cms/user/connorpa/DAS18/JEStables";
+//static const string JECpath = "/nfs/dust/cms/user/connorpa/DAS18/JEStables";
+static const string JECpath = "/nfs/dust/cms/user/zlebcr/JEC/JECtables";
 
 
 class JECs  {
@@ -18,6 +19,7 @@ class JECs  {
     bool isMC;
     FactorizedJetCorrector *jecL1Fast, *jecL2Relative, *jecL3Absolute, *jecL2L3Residual;
 
+    public:
     double ApplyJECL1Fast (double &pt, double eta, double area, double rho)
     {
         // ---- Evaluating the L1Fast correction factor ---- //
@@ -90,7 +92,7 @@ public:
 //AK4PFchs
         auto initCorr = [&](string corrType) {
             string wholePath =JECpath + "/" + name + "/" + name + "_" + corrType +"_"+jetType+".txt";
-            //cout << "WholePath " << wholePath  << endl;
+            cout << "WholePath " << wholePath  << endl;
             auto corPars       = new JetCorrectorParameters(wholePath);
             vector<JetCorrectorParameters> corParsVec;
             corParsVec    .push_back(*corPars);

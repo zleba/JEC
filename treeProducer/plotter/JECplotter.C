@@ -14,7 +14,8 @@ const vector<double> Ptbinning = {0, 1, 5, 6, 8, 10, 12, 15, 18, 21, 24, 28, 32,
 const vector<TString> pers  = {"BCD", "EF", "GH", "MC"};
 const vector<TString> types = {"L2L3res", "L2rel", "L3abs"};
 
-const int coneSize = 4;
+const int coneSize = 8;
+const int versionCHS = 11;
 
 
 #include "/afs/desy.de/user/c/connorpa/Libraries/PlottingHelper/plottingHelper.h"
@@ -59,14 +60,23 @@ class JECPlotter {
 
         TString outFile;
 
-        void InitJEC(JECs &jetCorrsCHS, JECs &jetCorrsPUPPI, char period = 'B') {
+        void InitJEC(JECs *&jetCorrsCHS, JECs *&jetCorrsPUPPI, TString  period) {
             const string jecTagCHS = "Summer16_07Aug2017";
-            const int versionCHS = 11;
-            bool isMC = period == 'M' ? true : false;
-            vector<string> dumy;
-            jetCorrsCHS.Init(isMC, jecTagCHS, period, versionCHS, SF("AK%dPFchs", coneSize).Data(), "", dumy);
+            //bool isMC = period == "M" ? true : false;
+            //vector<string> dumy;
 
-            jetCorrsPUPPI.Init(isMC, jecTagCHS, period, versionCHS, SF("AK%dPFPuppi", coneSize).Data(), "", dumy);
+            TString type = (period == "MC") ? "MC" : "DATA";
+            if(type == "MC") period = "";
+
+            //jecMapCHS4[per]   = new JECs("Summer16_07Aug2017BCD_V14_DATA", "AK4PFchs");
+            //jecMapCHS8[per]   = new JECs("Summer16_07Aug2017BCD_V14_DATA", "AK8PFchs");
+            //jecMapPUPPI4[per] = new JECs("Summer16_07Aug2017BCD_V14_DATA", "AK4PFPuppi");
+
+            jetCorrsCHS   = new JECs(Form("Summer16_07Aug2017%s_V%d_%s",period.Data(),versionCHS,type.Data()), Form("AK%dPFchs",coneSize));
+            jetCorrsPUPPI = new JECs(Form("Summer16_07Aug2017%s_V%d_%s",period.Data(),versionCHS,type.Data()), Form("AK%dPFPuppi",coneSize));
+
+            //jetCorrsCHS.Init(isMC, jecTagCHS, period, versionCHS, SF("AK%dPFchs", coneSize).Data(), "", dumy);
+            //jetCorrsPUPPI.Init(isMC, jecTagCHS, period, versionCHS, SF("AK%dPFPuppi", coneSize).Data(), "", dumy);
         }
         void InitHistos() {
 
@@ -91,19 +101,19 @@ class JECPlotter {
 
         void FillCorr() {
 
-             typedef double (JECs::*FunPtr)(double pt, double eta);
+             typedef double (JECs::*FunPtr)(double &pt, double eta);
 
              map<TString, FunPtr > funArr;
-             funArr["L2L3res"] = &JECs::GetJECL2L3Residual;
-             funArr["L2rel"] = &JECs::GetJECL2Relative ;
-             funArr["L3abs"] = &JECs::GetJECL3Absolute ;
+             funArr["L2L3res"] = &JECs::ApplyJECL2L3Residual;
+             funArr["L2rel"] = &JECs::ApplyJECL2Relative ;
+             funArr["L3abs"] = &JECs::ApplyJECL3Absolute ;
 
             for(auto t : types) 
             for(auto p : pers) {
                 char per = p[0];
 
-                JECs jetCorrsCHS, jetCorrsPUPPI;
-                InitJEC(jetCorrsCHS, jetCorrsPUPPI, per);
+                JECs *jetCorrsCHS, *jetCorrsPUPPI;
+                InitJEC(jetCorrsCHS, jetCorrsPUPPI, p);
 
                 //Fill Corrections
                 for(int i = 1; i <= hJEC[t][p].hCHSp->GetNbinsX(); ++i)
@@ -123,11 +133,13 @@ class JECPlotter {
 
                      if(t != "L2L3res" || p != "MC")
                      {
-                         FillBin(hJEC[t][p].hCHSp, ((jetCorrsCHS).*(funArr[t]))(pt, eta));
-                         FillBin(hJEC[t][p].hCHSn, ((jetCorrsCHS).*(funArr[t]))(pt,-eta));
+                         double pt1,pt2,pt3,pt4;
+                         pt1=pt2=pt3=pt4 = pt;
+                         FillBin(hJEC[t][p].hCHSp, ((*jetCorrsCHS).*(funArr[t]))(pt1, eta));
+                         FillBin(hJEC[t][p].hCHSn, ((*jetCorrsCHS).*(funArr[t]))(pt2,-eta));
 
-                         FillBin(hJEC[t][p].hPUPPIp, ((jetCorrsPUPPI).*(funArr[t]))(pt, eta));
-                         FillBin(hJEC[t][p].hPUPPIn, ((jetCorrsPUPPI).*(funArr[t]))(pt,-eta));
+                         FillBin(hJEC[t][p].hPUPPIp, ((*jetCorrsPUPPI).*(funArr[t]))(pt3, eta));
+                         FillBin(hJEC[t][p].hPUPPIn, ((*jetCorrsPUPPI).*(funArr[t]))(pt4,-eta));
                      }
 
                 }
@@ -136,7 +148,7 @@ class JECPlotter {
 
         void PlotAll() {
 
-            const TString OutFile = SF("plots/jecPlotAK%d_v10.pdf",coneSize);
+            const TString OutFile = SF("plots/jecPlotAK%d_v%d.pdf",coneSize,versionCHS);
 
             auto plotOne = [&](TString t, TString p, double Min, double Max ) {
                 PlottSingle(hJEC[t][p].hCHSp,  hJEC[t][p].hCHSn,
