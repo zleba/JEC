@@ -16,11 +16,11 @@ The `treeProducer.cc` is in `plugins` and contains code to produce user trees (n
 To see the jet properties currently stored in the ntuple, see the file `interface/QCDjet.h`
 
 The scripts related to the running of the code producing nTuples are stored in `python` directory.
-Especially consider these files:
-`treeProducerCrab.py` -- the configuration for the `cmsRun` command
-`dataSets.py` -- file containing list of data sets which can be currently used
-`crabConfig.py` -- script to run nTuple production on grid
-`test.py` -- script to run short test (runs cmsRun with proper setup)
+Especially consider these files: 
+`treeProducerCrab.py` -- the configuration for the `cmsRun` command 
+`dataSets.py` -- file containing list of data sets which can be currently used 
+`crabConfig.py` -- script to run nTuple production on grid 
+`test.py` -- script to run short test (runs cmsRun with proper setup) 
 
 Before running, please init your grid-certificate and crab:
 ```
