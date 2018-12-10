@@ -101,9 +101,14 @@ When `submit` command is used, it takes some time for jobs to start running, but
 
 
 ## Adding JEC and calculating trigger weight (nTuple &rightarrow; nTuple)
-The evaluation of the JEC correction by `FactorizedJetCorrector` (interface coded in file `bin/JEC.h`) is quite slow, therefore, before the histograms are filled, the intermediate step is introduced to correct the jet pTs for the JEC effects.
+The evaluation of the JEC correction by `FactorizedJetCorrector` (interface coded in file `bin/JEC.h`) is quite slow, therefore, before the histograms are filled from the nTuples, the intermediate step is introduced to correct the jet pTs for the JEC effects.
 
-By default all levels of JEC are applied, one can change it in the code.
+By default all levels of JEC are applied, but it can change it in the code.
+The text files with the corrections can be found in
+https://github.com/cms-jet/JECDatabase/tree/master/textFiles
+Please, download the directories with the needed corrections and set the `JECpath`, i.e. the  to the directory with corrections in `bin/JEC.h`.
+The actual version  of the corrections which is in use can be changed in `bin/processor.cc` in the `GetDataJEC` function.
+
 
 In addition to the application of the JEC, at this step the event weight is calculated in accordance with the trigger efficiency intervals based on leading (or tagged) jet pt.
 The events were the corresponding trigger element was not fired are removed.
@@ -111,27 +116,38 @@ Run the pre-analysis using:
 ```
 submit processor inputDir output.root
 ```
-Here inputDir is the directory containing ntuples from crab run (many root files), and the output.root is single root file containing result.
+Here `inputDir` is the directory containing nTuples from crab run (many root files), and the `output.root` is single root file containing result.
 The example of the run can be found in short shell script.
 ```
 processor.sh
 ```
-Processing of 2016 data nTuples typically takes ~10 minutes on DESY htcondor based batch system(submit command).
+Processing of 2016 data nTuples typically takes ~10 minutes on DESY htcondor based batch system (submit command).
 
 ## Filling histograms from pre-processed ntuple (nTuple &rightarrow; histos)
 In the next step the histograms can be filled from nTupes obtained in previous step.
+The code to fill the histograms can be seen in `bin/filler.cc`
 To do so run
 ```
 parallel filler input.root histos.root
 ```
-Where input.root is the address of the input nTuple file and histos.root is address of the output file containing filled histograms.
+Where `input.root` is the address of the input nTuple file and `histos.root` is address of the output file containing filled histograms.
 Example, how to call such analysis code is given in.
 ```
 filler.sh
 ```
 
 ## Plotting histograms from the root-files with histograms (histos &rightarrow; pdf)
-Currently there is simple plotting macro in the `plotting` directory called `plotter.C`, to simplify the code, some functions from `plottingHelper` library are employed, more information on:
-```https://github.com/zleba/PlottingHelper```
-for plotting itself do `root -l -b -q plotter.C`, check the input and output file which are hard-coded in the beginning of `void plotter()` function.
+The plotting of the histograms is based on the `PlottingHelper`  library [https://github.com/zleba/PlottingHelper], which needs to be install first, to do so run the following commands int the `plotter` directory
+```
+git clone git@github.com:zleba/PlottingHelper.git
+cd PlottingHelper
+make
+```
+
+For plotting itself, there is a simple plotting macro in the `plotting` directory called `plotter.C`.
+Finally call:
+```
+root -l -b -q plotter.C
+```
+Check the input and output file which are hard-coded in the beginning of `void plotter()` function.
 

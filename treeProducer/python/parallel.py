@@ -11,7 +11,6 @@ tmpDir = check_output(["getTempDir"]).rstrip()
 def setEnv(cmd, exDir):
     myEx   = check_output(["which", cmd]).rstrip()
     myLibs = check_output("ldd  " +  myEx + " | grep $CMSSW_BASE | awk '{print $3}'" , shell=True).splitlines()
-    print "Patrick", myLibs
 
     from shutil import copy
     #print 'RADEK', myEx, exDir

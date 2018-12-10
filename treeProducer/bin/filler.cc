@@ -31,7 +31,7 @@ Histos h;
 
 void DoMikkoMatching(int runNo, vector<QCDjet> *chsJets, vector<QCDjet> *testJets, double wgt, double wgtTot)
 {
-    int fileId =  getPer(runNo) - 'A';
+    int fileId =  getPer(runNo) - 'A'; //Get periodId from the run number
 
     if(chsJets->size() < 2 || testJets->size() < 1) return;
 

@@ -1,7 +1,7 @@
 #define SF TString::Format
 
-#include "/afs/desy.de/user/c/connorpa/Libraries/PlottingHelper/plottingHelper.h"
-R__LOAD_LIBRARY(/afs/desy.de/user/c/connorpa/Libraries/PlottingHelper/libPlottingHelper.so)
+#include "PlottingHelper/plottingHelper.h"
+R__LOAD_LIBRARY(PlottingHelper/libPlottingHelper.so)
 
 //#include "utils/RemoveOverlaps.h"
 
@@ -630,7 +630,7 @@ pair<TGraphErrors*, TGraphErrors*> GetMikkoCorr(vector<TProfile2D*> *hProf, int 
         gr1->SetPointError(k-1, e4, e3); 
 
         //if(i == 42) {
-            cout << "Kukacka " <<i<<" "<< v4 <<" "<<  r << endl;
+            //cout << "Kukacka " <<i<<" "<< v4 <<" "<<  r << endl;
         //}
 
 
@@ -2389,51 +2389,50 @@ void plotter()
 
 
     PLOTTER plot;
-    //TString myOut = "plots/Spring16_25nsV6.pdf";
-    //plot.Init("histos/Spring16_25nsV6__Spring16_25nsV6.root", myOut+"(");
+    //TString outFile = "plots/Spring16_25nsV6.pdf";
+    //plot.Init("histos/Spring16_25nsV6__Spring16_25nsV6.root", outFile+"(");
 
-    //TString myOut = "plots/Summer16_07Aug2017V5newnew.pdf";
-    //plot.Init("histos/Summer16_07Aug2017V5__Summer16_07Aug2017V5newnew.root", myOut+"(");
+    //TString outFile = "plots/Summer16_07Aug2017V5newnew.pdf";
+    //plot.Init("histos/Summer16_07Aug2017V5__Summer16_07Aug2017V5newnew.root", outFile+"(");
 
-    //TString myOut = "plots/new10.pdf";
-    //plot.Init("histos/V10V10newBinning.root", myOut+"(");
-    //TString myOut = "plots/new7.pdf";
-    //plot.Init("histos/V7V7newBinning.root", myOut+"(");
+    //TString outFile = "plots/new10.pdf";
+    //plot.Init("histos/V10V10newBinning.root", outFile+"(");
+    //TString outFile = "plots/new7.pdf";
+    //plot.Init("histos/V7V7newBinning.root", outFile+"(");
 
     //TString nTag = "profilesCentralBB";
-    TString nTag = "puppi";
-
-    TString myOut = "plots/"+nTag+".pdf";
-    //plot.Init("histos/V11V11newBinning.root", myOut+"(");
+    TString nTag = "puppi18";
+    TString outFile = "plots/"+nTag+".pdf";
+    //plot.Init("histos/V11V11newBinning.root", outFile+"(");
 
 
     if(jTest == "AK8")
-        plot.Init("/nfs/dust/cms/user/zlebcr/JEC/ntuplesTemp/histos/histo4AK8CHSnewJEC.root", myOut+"(");
+        plot.Init("/nfs/dust/cms/user/zlebcr/JEC/ntuplesTemp/histos/histo4AK8CHSnewJEC.root", outFile+"(");
     else
-        plot.Init("/nfs/dust/cms/user/zlebcr/JEC/ntuplesTemp/histos/histoPuppi.root", myOut+"(");
+        plot.Init("/nfs/dust/cms/user/zlebcr/JEC/ntuplesTemp/histos/histo18Puppi.root", outFile+"(");
 
 
-    //plot.Init("histos/Summer16_07Aug2017V5__Summer16_07Aug2017V5noResNew.root", myOut+"(");
+    //plot.Init("histos/Summer16_07Aug2017V5__Summer16_07Aug2017V5noResNew.root", outFile+"(");
 
-    //TString myOut = "plots/Summer16_07Aug2017V5noRes.pdf";
-    //plot.Init("histos/Summer16_07Aug2017V5__Summer16_07Aug2017V5noRes.root", myOut+"(");
-
-
-    //TString myOut = "plots/Mixed.pdf";
-    //plot.Init("histos/Summer16_07Aug2017V5__Spring16_23Sep2016V2new.root", myOut+"(");
-    //TString myOut = "plots/MixedNoRes.pdf";
-    //plot.Init("histos/Summer16_07Aug2017V5__Spring16_23Sep2016V2noRes.root", myOut+"(");
+    //TString outFile = "plots/Summer16_07Aug2017V5noRes.pdf";
+    //plot.Init("histos/Summer16_07Aug2017V5__Summer16_07Aug2017V5noRes.root", outFile+"(");
 
 
+    //TString outFile = "plots/Mixed.pdf";
+    //plot.Init("histos/Summer16_07Aug2017V5__Spring16_23Sep2016V2new.root", outFile+"(");
+    //TString outFile = "plots/MixedNoRes.pdf";
+    //plot.Init("histos/Summer16_07Aug2017V5__Spring16_23Sep2016V2noRes.root", outFile+"(");
 
-    //plot.Init("histoDir/Aug/jetsAll.root", myOut+"(");
+
+
+    //plot.Init("histoDir/Aug/jetsAll.root", outFile+"(");
     /*
     plot.perID = 1;
 
     plot.JEC();
-    plot.outName = myOut;
+    plot.outName = outFile;
     plot.PtEtaDep();
-    plot.outName = myOut+ ")";
+    plot.outName = outFile+ ")";
     plot.MeanAsym(0);
     return;
     */
@@ -2443,7 +2442,7 @@ void plotter()
 
     plot.perID = 0;
     plot.Unmatched();       //AK8 alone without AK4 matched
-    plot.outName = myOut;
+    plot.outName = outFile;
     plot.Unmatched("chs4"); //AK4 alone without AK8 matched
 
     //plot.Unmatched("tested", "neg"); //AK8 alone without AK4 matched

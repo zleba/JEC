@@ -31,19 +31,19 @@ JECs * GetDataJEC (int runNo, string jetType)
 
     if (jecMapCHS4.count(per) == 0) {
         if ('B' <= per  && per <= 'D') {
-            jecMapCHS4[per]   = new JECs("Summer16_07Aug2017BCD_V14_DATA", "AK4PFchs");
-            jecMapCHS8[per]   = new JECs("Summer16_07Aug2017BCD_V14_DATA", "AK8PFchs");
-            jecMapPUPPI4[per] = new JECs("Summer16_07Aug2017BCD_V14_DATA", "AK4PFPuppi");
+            jecMapCHS4[per]   = new JECs("Summer16_07Aug2017BCD_V18_DATA", "AK4PFchs");
+            jecMapCHS8[per]   = new JECs("Summer16_07Aug2017BCD_V18_DATA", "AK8PFchs");
+            jecMapPUPPI4[per] = new JECs("Summer16_07Aug2017BCD_V18_DATA", "AK4PFPuppi");
         }
         else if ('E' <= per  && per <= 'F') {
-            jecMapCHS4[per]   = new JECs("Summer16_07Aug2017EF_V14_DATA", "AK4PFchs");
-            jecMapCHS8[per]   = new JECs("Summer16_07Aug2017EF_V14_DATA", "AK8PFchs");
-            jecMapPUPPI4[per] = new JECs("Summer16_07Aug2017EF_V14_DATA", "AK4PFPuppi");
+            jecMapCHS4[per]   = new JECs("Summer16_07Aug2017EF_V18_DATA", "AK4PFchs");
+            jecMapCHS8[per]   = new JECs("Summer16_07Aug2017EF_V18_DATA", "AK8PFchs");
+            jecMapPUPPI4[per] = new JECs("Summer16_07Aug2017EF_V18_DATA", "AK4PFPuppi");
         }
         else if('G' <= per  && per <= 'H') {
-            jecMapCHS4[per]   = new JECs("Summer16_07Aug2017GH_V14_DATA", "AK4PFchs");
-            jecMapCHS8[per]   = new JECs("Summer16_07Aug2017GH_V14_DATA", "AK8PFchs");
-            jecMapPUPPI4[per] = new JECs("Summer16_07Aug2017GH_V14_DATA", "AK4PFPuppi");
+            jecMapCHS4[per]   = new JECs("Summer16_07Aug2017GH_V18_DATA", "AK4PFchs");
+            jecMapCHS8[per]   = new JECs("Summer16_07Aug2017GH_V18_DATA", "AK8PFchs");
+            jecMapPUPPI4[per] = new JECs("Summer16_07Aug2017GH_V18_DATA", "AK4PFPuppi");
         }
         else {
             cout << "Wrong period "<< per  << endl;

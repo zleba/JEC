@@ -1,6 +1,6 @@
 #!/bin/bash
 inDir=/pnfs/desy.de/cms/tier2/store/user/rzlebcik/JetHT/puppi3_JetHT_Run2016C-07Aug17-v1
-outFile=/nfs/dust/cms/user/zlebcr/JEC/ntuplesTemp/runTest.root
+outFile=/nfs/dust/cms/user/zlebcr/JEC/ntuplesTemp/runTest18.root
 #processor $inDir $outFile 100
 #exit
 #parallel processor $inDir $outFile -j5
@@ -9,7 +9,8 @@ outFile=/nfs/dust/cms/user/zlebcr/JEC/ntuplesTemp/runTest.root
 for per in {B..H}
 do
     inDir=`ls -d /pnfs/desy.de/cms/tier2/store/user/rzlebcik/JetHT/puppi3_JetHT_Run2016$per*`
-    outFile=/nfs/dust/cms/user/zlebcr/JEC/ntuplesTemp/ak4study/run3${per}.root
+    outFile=/nfs/dust/cms/user/zlebcr/JEC/ntuplesTemp/ak4study/run18${per}.root
     echo $inDir
     submit processor $inDir $outFile &
+    #parallel processor $inDir $outFile 
 done
