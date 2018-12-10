@@ -2,6 +2,7 @@
 
 ## Installation
 ```
+source /cvmfs/cms.cern.ch/cmsset_default.sh
 scram p CMSSW_9_3_0
 cd CMSSW_9_3_0/src
 git clone git@github.com:zleba/JEC.git

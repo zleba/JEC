@@ -11,6 +11,7 @@ class QCDjet {
     public:
     int flavor      ;
     int flavorHadron;
+    //Other jet properties currently not in use to make nTuples small
     //float chf       ;
     //float nhf       ;
     //float phf       ;
@@ -24,7 +25,7 @@ class QCDjet {
     float jetJECtot;
     float jetJECl2l3Res;
 
-    float  btag;
+    float btag;
     float area;
     float unc;
     ROOT::Math::PtEtaPhiM4D<float> p4;
