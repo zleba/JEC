@@ -32,28 +32,30 @@ As a next step, I recommend to run test locally with few events.
 ```
 ./test.py
 ```
+One can check the created root file with nTuples using `rootbrowse *.root`. 
 
 If the test run was successful, one can proceed to run on grid over the whole data sample
 ```
 ./crabConfig.py
 ```
-Here notice the first lines of the crabConfig script
+Here notice the first lines of the `crabConfig.py` script
 ```
 fileTag = 'puppi2_'
 from dataSets  import *
 sets =  data16
 ```
-the `fileTag` is the nameTag to distinguish between different runs of the ntupliser.
-The list of data sets are imported from `dataSets.py` file and consequently the script submit all 2016 data sets to grid.
+the `fileTag` is the tag to distinguish between different runs of the nTupliser.  
+The list of data sets are imported from `dataSets.py` file and consequently the script submit all 2016 data sets to grid.  
 To run over 2016+2017, one needs to specify `sets = data16 + data17`.
 
 
-When the run is finished, the root files with ntuples should be stored in the following directory
+When the run is finished, the root files with nTuples should be stored in the following directory
 ```
 /pnfs/desy.de/cms/tier2/store/user/$USER/JetHT
 ```
+where `$USER` is your lxplus user name.
 
-Since cram produce grid pack from the whole content of the JEC directory, please don't put there any large files (e.g. heavy root files), otherwise the grid pack will be heavy and the transfer to the node would be slow.
+Since crab produces grid pack from the whole content of the JEC directory, please don't put there any large files (e.g. heavy root files), otherwise the grid pack will be heavy and the transfer to the computational node would be slow.
 
 
 ## Analysing the nTuples - General remarks
@@ -65,11 +67,11 @@ In general the nTuplisers are processed using short compiled programs which are 
 ```
 myAnalyser input output nSlices iSlice
 ```
-`myAnalyser` - some name of the program to analyse ntuples
-`input`  - is the input root file with nTuple or input directory containing several root files
-`output` - is single output root file (containing histograms and/or nTuple)
-`nSlices`  - number of divisions of the whole input sample (these divisions have equal statistics), default value is 1 = no division
-`iSlice`   - current slice index, can have value between 0..nSlices-1, default value is 0 = run on the first slice
+`myAnalyser` - some name of the program to analyse ntuples  
+`input`  - is the input root file with nTuple or input directory containing several root files  
+`output` - is single output root file (containing histograms and/or nTuple)  
+`nSlices`  - number of divisions of the whole input sample (these divisions have equal statistics), default value is 1 = no division  
+`iSlice`   - current slice index, can have value between 0..nSlices-1, default value is 0 = run on the first slice  
 
 These kind of programs can be used either to fill histograms from nTuple or to modify/filter events in the given nTuple.
 This is inspired by [fold](https://en.wikipedia.org/wiki/Fold_(higher-order_function))/[map](https://en.wikipedia.org/wiki/Map_(higher-order_function))/[filter](https://en.wikipedia.org/wiki/Filter_(higher-order_function)) paradigm of the functional programing.
@@ -78,7 +80,7 @@ For short test run, one can use something like:
 ```
 myAnalyser input output 1000
 ```
-which will run only on the first slice from 1000 (=only on few events).
+which will run only on the first slice from 1000 (=only over few events).
 The motivation for such argument structure is to allow simple parallelization, as each slice can run independently and, in the next step, the outputs have to be merged using `hadd`.
 
 The parallelization is done in the automatic way, by putting an extra command in front of given program, it can look like:

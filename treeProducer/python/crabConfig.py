@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-#source /cvmfs/cms.cern.ch/crab3/crab.sh
 
 #File tag for the outputFileNames and jobNames
 fileTag = 'puppi3_'
