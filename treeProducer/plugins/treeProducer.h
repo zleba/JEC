@@ -101,18 +101,21 @@ struct Parameters {
     edm::EDGetTokenT<pat::METCollection> met2Token;
     edm::EDGetTokenT<pat::METCollection> met3Token;
     //edm::EDGetTokenT<pat::METCollection> metCHSToken;
+    edm::EDGetTokenT<pat::METCollection> metToken;
 
     edm::EDGetTokenT<pat::PackedCandidateCollection> candsToken;
     edm::EDGetTokenT<double> rhoToken;
     edm::EDGetTokenT<reco::VertexCollection> recVtxsToken;
     edm::EDGetTokenT<edm::TriggerResults> triggerResultsToken;
+    edm::EDGetTokenT<edm::TriggerResults> metResultsToken;
+
     edm::EDGetTokenT<pat::PackedTriggerPrescales> triggerPrescalesToken;
     edm::EDGetTokenT<edm::View<PileupSummaryInfo> > pupInfoToken;
     edm::EDGetTokenT<GenEventInfoProduct> genEvtInfoToken;
     edm::EDGetTokenT<edm::View<reco::GenParticle> > genParticlesToken;
     edm::EDGetTokenT<LHEEventProduct> lheEvtInfoToken;
     edm::EDGetTokenT<LHERunInfoProduct> runInfoToken;
-    std::vector<std::string> triggerNames_;
+    std::vector<std::string> triggerNames_, metNames_;
     std::string srcBtag_;
     edm::EDGetTokenT<pat::TriggerObjectStandAloneCollection> triggerObjectsToken;
   
@@ -148,6 +151,7 @@ struct Parameters {
         rhoToken              = iC.consumes<double>(cfg.getParameter<edm::InputTag>("rho"));
         recVtxsToken          = iC.consumes<reco::VertexCollection>(cfg.getParameter<edm::InputTag>("vertices"));
         triggerResultsToken   = iC.consumes<edm::TriggerResults>(cfg.getParameter<edm::InputTag>("triggerResults"));
+        metResultsToken       = iC.consumes<edm::TriggerResults>(cfg.getParameter<edm::InputTag>("metResults"));
         triggerPrescalesToken = iC.consumes<pat::PackedTriggerPrescales>(cfg.getParameter<edm::InputTag>("triggerPrescales"));
         pupInfoToken          = iC.consumes<edm::View<PileupSummaryInfo> >(edm::InputTag("slimmedAddPileupInfo"));
         genEvtInfoToken       = iC.consumes<GenEventInfoProduct>(edm::InputTag("generator"));
@@ -157,6 +161,8 @@ struct Parameters {
         srcBtag_              = cfg.getParameter<std::string>("btagger");
         //  xmlFile_              = cfg.getParameter<std::string>("xmlFile");
         triggerNames_         = cfg.getParameter<std::vector<std::string> >("triggerNames");
+        metNames_             = cfg.getParameter<std::vector<std::string> >("metNames");
+        metToken              = iC.consumes<pat::METCollection>(cfg.getParameter<edm::InputTag>("met"));
 
         triggerObjectsToken  = iC.consumes<pat::TriggerObjectStandAloneCollection>(cfg.getParameter<edm::InputTag>("triggerObjects"));
 
@@ -226,6 +232,7 @@ class treeProducer : public edm::EDAnalyzer
 
     std::vector<bool> *triggerBit_;
     std::vector<int>  *triggerPre_;
+    std::vector<bool> *metBit_;
     //---- top variables --------------
     float dRJJ_,dPhiJJ_,mJJ_,yJJ_,ptJJ_;
     float dRGenJJ_,dPhiGenJJ_,mGenJJ_,yGenJJ_,ptGenJJ_,metGen_;
@@ -278,11 +285,13 @@ class treeProducer : public edm::EDAnalyzer
     edm::Handle<pat::METCollection> met1;
     edm::Handle<pat::METCollection> met2;
     edm::Handle<pat::METCollection> met3;
+
+    edm::Handle<pat::METCollection> met;
     //edm::Handle<pat::METCollection> metCHS;
     edm::Handle<pat::PackedCandidateCollection> cands;
     edm::Handle<double> rho;
     edm::Handle<reco::VertexCollection> recVtxs;
-    edm::Handle<edm::TriggerResults> triggerResults;
+    edm::Handle<edm::TriggerResults> triggerResults, metResults;
     edm::Handle<pat::PackedTriggerPrescales> triggerPrescales;
     edm::Handle<pat::TriggerObjectStandAlone> triggerObjects;
     edm::Handle<edm::View<PileupSummaryInfo> > pupInfo;

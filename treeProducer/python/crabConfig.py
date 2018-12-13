@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 #File tag for the outputFileNames and jobNames
-fileTag = 'puppi3_'
+fileTag = 'puppi4_'
 from dataSets  import *
 sets =  data16
 
@@ -37,6 +37,7 @@ if __name__ == '__main__':
         config.Data.splitting = 'LumiBased' #LumiBased'
         config.Data.unitsPerJob = 90
         #config.Data.totalUnits  = 10
+        config.Data.ignoreLocality = True
 
         #JSON files from https://cms-service-dqm.web.cern.ch/cms-service-dqm/CAF/certification/
         if '/JetHT/Run2016' in dataset:
@@ -52,6 +53,7 @@ if __name__ == '__main__':
 
         config.section_("Site")
         config.Site.storageSite = "T2_DE_DESY"
+        config.Site.whitelist = ["T2_*"] #for ignoreLocality
 
 
         print config.General.requestName, dataset

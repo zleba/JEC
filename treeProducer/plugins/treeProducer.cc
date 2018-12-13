@@ -154,8 +154,10 @@ void treeProducer::beginJob()
   //------------------------------------------------------------------
   triggerBit_ = new std::vector<bool>;
   triggerPre_ = new std::vector<int>;
+  metBit_     = new std::vector<bool>;
   outTree_->Branch("triggerBit"           ,"vector<bool>"      ,&triggerBit_);
   outTree_->Branch("triggerPre"           ,"vector<int>"       ,&triggerPre_);
+  outTree_->Branch("metBit"               ,"vector<bool>"      ,&metBit_);
 
   //outTree_->Branch("nTriggerObjects", &nTriggerObjects_, "nTriggerObjects/I");
 
@@ -238,8 +240,30 @@ void treeProducer::analyze(edm::Event const& iEvent, edm::EventSetup const& iSet
   iEvent.getByToken(p.met2Token,met2);
   iEvent.getByToken(p.met3Token,met3);
 
+  iEvent.getByToken(p.metToken, met);
+  iEvent.getByToken(p.metResultsToken, metResults);
+
   triggerBit_->clear();
   triggerPre_->clear();
+  metBit_->clear();
+
+
+  //-------------- MET Info -----------------------------------
+  const edm::TriggerNames &namesMet = iEvent.triggerNames(*metResults);  
+  for(unsigned int k=0; k < p.metNames_.size(); ++k) {
+      bool bit(false);
+      for(unsigned int itrig=0; itrig<metResults->size(); ++itrig) {
+          //cout<<"MET filters name of index "<<itrig<<" "<<string(namesMet.triggerName(itrig))<<endl;
+          string met_name = string(namesMet.triggerName(itrig));
+          if (met_name == p.metNames_[k]) {
+              bit = metResults->accept(itrig);
+              break;
+          }
+      }
+      metBit_->push_back(bit); 
+  }   
+
+
 
   //-------------- Trigger Info -----------------------------------
   const edm::TriggerNames &names = iEvent.triggerNames(*triggerResults);  
