@@ -137,7 +137,7 @@ filler.sh
 ```
 
 ## Plotting histograms from the root-files with histograms (histos &rightarrow; pdf)
-The plotting of the histograms is based on the `PlottingHelper`  library [https://github.com/zleba/PlottingHelper], which needs to be install first, to do so run the following commands int the `plotter` directory
+The plotting of the histograms is based on the `PlottingHelper`  library https://github.com/zleba/PlottingHelper, which needs to be install first, to do so run the following commands int the `plotter` directory
 ```
 git clone git@github.com:zleba/PlottingHelper.git
 cd PlottingHelper

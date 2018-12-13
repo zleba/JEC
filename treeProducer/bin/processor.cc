@@ -1,9 +1,11 @@
 #include <iostream>
+#include <algorithm>
 
 #include <TChain.h>
 #include <TFile.h>
 #include <TROOT.h>
 #include <TH1D.h>
+#include <TH2D.h>
 #include <TRandom.h>
 #include <vector>
 
@@ -19,8 +21,32 @@
 using namespace std::experimental::filesystem;
 using namespace std;
 
+//Remove hot points from the data
+void ApplyHotRemoval(int runNo,  vector<QCDjet> &jets)
+{
+    static TString perOld = "X";
+    static TH2D *hotHist = nullptr;
 
+    TString per = getPerFine(runNo);
 
+    if(perOld != per) { //if new period
+        TFile *hotFile = TFile::Open("/afs/desy.de/user/z/zlebcr/cms/JEC/CMSSW_9_4_10/src/JEC/treeProducer/data/hotjets-run"+per+".root");
+        assert(hotFile);
+        hotHist = dynamic_cast<TH2D*>(hotFile->Get("h2hotfilter"));
+        assert(hotHist);
+        perOld = per;
+    }
+
+    jets.erase(std::remove_if(jets.begin(), jets.end(),
+                [&](QCDjet &jet){
+                    int ibin  = hotHist->FindBin(jet.p4.Eta(), jet.p4.Phi());
+                    double val = hotHist->GetBinContent(ibin);
+                    return (val == 0); //remove if val == 0
+                }),
+            jets.end());
+
+    sort(jets.begin(), jets.end(), [](QCDjet &a, QCDjet &b) {return a.p4.Pt() > b.p4.Pt();});
+}
 
 
 JECs * GetDataJEC (int runNo, string jetType)
@@ -31,19 +57,19 @@ JECs * GetDataJEC (int runNo, string jetType)
 
     if (jecMapCHS4.count(per) == 0) {
         if ('B' <= per  && per <= 'D') {
-            jecMapCHS4[per]   = new JECs("Summer16_07Aug2017BCD_V18_DATA", "AK4PFchs");
-            jecMapCHS8[per]   = new JECs("Summer16_07Aug2017BCD_V18_DATA", "AK8PFchs");
-            jecMapPUPPI4[per] = new JECs("Summer16_07Aug2017BCD_V18_DATA", "AK4PFPuppi");
+            jecMapCHS4[per]   = new JECs("Summer16_07Aug2017BCD_V16_DATA", "AK4PFchs");
+            jecMapCHS8[per]   = new JECs("Summer16_07Aug2017BCD_V16_DATA", "AK8PFchs");
+            jecMapPUPPI4[per] = new JECs("Summer16_07Aug2017BCD_V16_DATA", "AK4PFPuppi");
         }
         else if ('E' <= per  && per <= 'F') {
-            jecMapCHS4[per]   = new JECs("Summer16_07Aug2017EF_V18_DATA", "AK4PFchs");
-            jecMapCHS8[per]   = new JECs("Summer16_07Aug2017EF_V18_DATA", "AK8PFchs");
-            jecMapPUPPI4[per] = new JECs("Summer16_07Aug2017EF_V18_DATA", "AK4PFPuppi");
+            jecMapCHS4[per]   = new JECs("Summer16_07Aug2017EF_V16_DATA", "AK4PFchs");
+            jecMapCHS8[per]   = new JECs("Summer16_07Aug2017EF_V16_DATA", "AK8PFchs");
+            jecMapPUPPI4[per] = new JECs("Summer16_07Aug2017EF_V16_DATA", "AK4PFPuppi");
         }
         else if('G' <= per  && per <= 'H') {
-            jecMapCHS4[per]   = new JECs("Summer16_07Aug2017GH_V18_DATA", "AK4PFchs");
-            jecMapCHS8[per]   = new JECs("Summer16_07Aug2017GH_V18_DATA", "AK8PFchs");
-            jecMapPUPPI4[per] = new JECs("Summer16_07Aug2017GH_V18_DATA", "AK4PFPuppi");
+            jecMapCHS4[per]   = new JECs("Summer16_07Aug2017GH_V16_DATA", "AK4PFchs");
+            jecMapCHS8[per]   = new JECs("Summer16_07Aug2017GH_V16_DATA", "AK8PFchs");
+            jecMapPUPPI4[per] = new JECs("Summer16_07Aug2017GH_V16_DATA", "AK4PFPuppi");
         }
         else {
             cout << "Wrong period "<< per  << endl;
@@ -157,6 +183,12 @@ void procesor (TString input, TString output, int nSplit = 1, int nNow = 0)
         inputChain->GetEntry(i);
 
         //if(chs8Jets->size() > 0) cout << "TEST1 " << chs8Jets->at(0).p4.Pt() << endl;
+
+        //Remove hot places
+        ApplyHotRemoval(runNo, *chs4Jets);
+        ApplyHotRemoval(runNo, *chs8Jets);
+        ApplyHotRemoval(runNo, *puppi4Jets);
+
 
         //JEC corrections
         ApplyJEC(runNo, rho, *chs4Jets,   "AK4PFchs");

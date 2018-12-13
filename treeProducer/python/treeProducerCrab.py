@@ -2,6 +2,8 @@
 import FWCore.ParameterSet.Config as cms 
 import FWCore.ParameterSet.VarParsing as VarParsing
 
+year = 2016
+
 SimpleMemoryCheck = cms.Service("SimpleMemoryCheck",
         ignoreTotal = cms.untracked.int32(1) )
 
@@ -137,6 +139,13 @@ process.matchGenBHadron = matchGenBHadron.clone(
     noBBbarResonances = cms.bool(False),
 )
 
+triggerObjectsTag = ''
+if year == 2016:
+    triggerObjectsTag = "selectedPatTrigger"
+elif year == 2017:
+    triggerObjectsTag = "slimmedPatTrigger"
+
+
 ##-------------------- User analyzer  --------------------------------
 process.ak8 = cms.EDAnalyzer('treeProducer',
   jets             = cms.InputTag('slimmedJetsAK8'),
@@ -157,7 +166,7 @@ process.ak8 = cms.EDAnalyzer('treeProducer',
   genparticles     = cms.untracked.InputTag('prunedGenParticles'),
   triggerNames     = cms.vstring('HLT_AK8PFJet40_v','HLT_AK8PFJet60_v','HLT_AK8PFJet80_v','HLT_AK8PFJet140_v','HLT_AK8PFJet200_v','HLT_AK8PFJet260_v','HLT_AK8PFJet320_v','HLT_AK8PFJet400_v','HLT_AK8PFJet450_v','HLT_AK8PFJet500_v'),
   triggerResults   = cms.InputTag('TriggerResults','','HLT'),
-  triggerObjects  = cms.InputTag("selectedPatTrigger"),
+  triggerObjects  = cms.InputTag(triggerObjectsTag),
   isMC             = cms.untracked.bool('mc' in options.inputFiles[0]),                              
   SkipEvent       = cms.untracked.vstring('ProductNotFound'),
   jetFlavourInfos = cms.InputTag("ak8genJetFlavourInfos"),#ak8gen                 

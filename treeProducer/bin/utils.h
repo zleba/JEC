@@ -59,6 +59,22 @@ else if (281613 <= run && run <= 284044) return 'H';
      }
 }
 
+inline TString getPerFine(int run) //with splitting of F
+{
+     if (273158 <= run && run <= 275376) return "B";
+else if (275657 <= run && run <= 276283) return "C";
+else if (276315 <= run && run <= 276811) return "D";
+else if (276831 <= run && run <= 277420) return "E";
+else if (277981 <= run && run <= 278801) return "Fe";
+else if (278802 <= run && run <= 278808) return "Fl";
+else if (278820 <= run && run <= 280385) return "G";
+else if (281613 <= run && run <= 284044) return "H";
+     else {
+         std::cout << "Wrong run " << std::endl;
+         std::exit(1);
+         return "x";
+     }
+}
 
 
 
