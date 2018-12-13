@@ -14,9 +14,9 @@ const vector<double> Ptbinning = {0, 1, 5, 6, 8, 10, 12, 15, 18, 21, 24, 28, 32,
 const vector<TString> pers  = {"BCD", "EF", "GH", "MC"};
 const vector<TString> types = {"L2L3res", "L2rel", "L3abs"};
 
-const int coneSize = 8;
-const int versionCHS   = 11;
-const int versionPUPPI = 11;
+const int coneSize = 4;
+const int versionCHS   = 16;
+const int versionPUPPI = 16;
 
 
 #include "/afs/desy.de/user/c/connorpa/Libraries/PlottingHelper/plottingHelper.h"
@@ -68,6 +68,10 @@ class JECPlotter {
 
             TString type = (period == "MC") ? "MC" : "DATA";
             if(type == "MC") period = "";
+            if(type == "MC") {
+                type = "DATA";
+                period = "BCD";
+            }
 
             //jecMapCHS4[per]   = new JECs("Summer16_07Aug2017BCD_V14_DATA", "AK4PFchs");
             //jecMapCHS8[per]   = new JECs("Summer16_07Aug2017BCD_V14_DATA", "AK8PFchs");

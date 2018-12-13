@@ -2401,7 +2401,7 @@ void plotter()
     //plot.Init("histos/V7V7newBinning.root", outFile+"(");
 
     //TString nTag = "profilesCentralBB";
-    TString nTag = "puppi18";
+    TString nTag = "puppi16";
     TString outFile = "plots/"+nTag+".pdf";
     //plot.Init("histos/V11V11newBinning.root", outFile+"(");
 
@@ -2409,7 +2409,7 @@ void plotter()
     if(jTest == "AK8")
         plot.Init("/nfs/dust/cms/user/zlebcr/JEC/ntuplesTemp/histos/histo4AK8CHSnewJEC.root", outFile+"(");
     else
-        plot.Init("/nfs/dust/cms/user/zlebcr/JEC/ntuplesTemp/histos/histo18Puppi.root", outFile+"(");
+        plot.Init("/nfs/dust/cms/user/zlebcr/JEC/ntuplesTemp/histos/histo16Puppi.root", outFile+"(");
 
 
     //plot.Init("histos/Summer16_07Aug2017V5__Summer16_07Aug2017V5noResNew.root", outFile+"(");
@@ -2475,7 +2475,7 @@ void plotter()
 
     plot.PlotProfiles(10, -1);
 
-    plot.outName = myOut + ")";
+    plot.outName = outFile + ")";
     plot.PlotProfiles(4, -1);
     return;
     /*
@@ -2511,7 +2511,7 @@ void plotter()
     plot.PlotFit(h1, h2);
 
     plot.MatchingFactorsYbased({}, true);
-    plot.outName = myOut + ")";
+    plot.outName = outFile + ")";
     plot.MatchingFactorsYbased(res, false);
 
     //plot.MatchingFactorsTimeDep(4);
@@ -2523,7 +2523,7 @@ void plotter()
     for(int i = 0; i <= iMax; ++i) {
         plot.perID = i;
         plot.AsymmetryEtaDep();
-        plot.outName = myOut;
+        plot.outName = outFile;
         plot.AsymmetryPtDep();
         plot.AsymmetryEtaPtDep(1, 5);
         plot.AsymmetryEtaPtDep(6, 10);
@@ -2537,7 +2537,7 @@ void plotter()
         plot.MeanAsym(0, "colz");
         plot.MeanAsym(1);
         if(i == iMax)
-            plot.outName = myOut + ")";
+            plot.outName = outFile + ")";
         plot.MeanAsym(2);
     }
 
